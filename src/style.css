@@ -1,0 +1,327 @@
+/* 全站样式 —— 沿用项目既有 UI 基调（PRD F6.3，主色 #185FA5） */
+
+:root {
+  --brand: #185FA5;
+  --brand-soft: #E6F1FB;
+  --ink: #1B2430;
+  --ink-soft: #5B6B7C;
+  --line: #DCE4EC;
+  --bg: #F4F7FA;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #141A20;
+  color: var(--ink);
+  font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  /* 3D 场景铺满窗口，页面本身不滚动 —— 内容页是独立覆盖层，有它自己的滚动 */
+  overflow: hidden;
+}
+
+/* Three.js 画布挂载点 */
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 内容页打开时，画布彻底让出鼠标事件。
+   否则点在内容页上的操作会同时被画布接住，导致返回按钮"点了没反应"。 */
+body.is-reading #app {
+  pointer-events: none;
+}
+
+/* ============================================================
+   收束层 —— PRD F5.2 / A6：三件全解锁后的明确结束信号
+   ============================================================ */
+.end-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 15, 19, 0);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, background 0.6s ease, visibility 0s linear 0.6s;
+}
+
+.end-layer.is-open {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(11, 15, 19, 0.94);
+  transition: opacity 0.6s ease, background 0.6s ease, visibility 0s;
+}
+
+.end-panel {
+  width: min(560px, 100%);
+  text-align: center;
+  color: #fff;
+  transform: translateY(16px);
+  transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.end-layer.is-open .end-panel {
+  transform: translateY(0);
+}
+
+.end-eyebrow {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--brand-light, #7FC4F5);
+}
+
+.end-title {
+  margin: 0 0 22px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.end-body {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.end-body--muted {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.end-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 34px;
+}
+
+.end-btn {
+  padding: 11px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.86);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.end-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.end-btn--primary {
+  border-color: transparent;
+  background: var(--brand);
+  color: #fff;
+}
+
+.end-btn--primary:hover {
+  background: #1F74C8;
+}
+
+/* ============================================================
+   加载遮罩 —— PRD F1.4：加载期间不出现空白页
+   ============================================================ */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: #141A20;
+  color: #BFD4EA;
+  transition: opacity 0.5s ease;
+}
+
+.boot.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-bar {
+  width: 180px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(191, 212, 234, 0.18);
+  overflow: hidden;
+}
+
+.boot-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #185FA5, #7FC4F5);
+  transition: width 0.3s ease;
+}
+
+.boot-text {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(191, 212, 234, 0.7);
+}
+
+/* ============================================================
+   内容页 —— PRD F4：盖在画布上的一层 DOM
+   本期是淡入淡出 + 轻微上浮；电影式镜头推进属后续迭代
+   ============================================================ */
+.content-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  background: rgba(11, 15, 19, 0);
+  opacity: 0;
+  visibility: hidden;
+  overflow-y: auto;
+  transition: opacity 0.42s ease, background 0.42s ease, visibility 0s linear 0.42s;
+}
+
+.content-layer.is-open {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(11, 15, 19, 0.9);
+  transition: opacity 0.42s ease, background 0.42s ease, visibility 0s;
+}
+
+.content-panel {
+  width: min(660px, calc(100% - 40px));
+  margin: auto;
+  padding: 52px 0 72px;
+  /* 内容页自己是浅色的，和暗房间形成"进入/离开"的对比 */
+  color: var(--ink);
+  transform: translateY(14px);
+  transition: transform 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.content-layer.is-open .content-panel {
+  transform: translateY(0);
+}
+
+.content-back {
+  margin: 0 0 30px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.content-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.content-eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.content-title {
+  margin: 0 0 28px;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.content-figure {
+  margin: 0 0 32px;
+}
+
+/* 配图占位：用 CSS 渐变画出"有画面"的感觉，等真素材到位后替换 */
+.content-image {
+  --obj-color: #7FC4F5;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 240px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 22% 18%, color-mix(in srgb, var(--obj-color) 55%, #0E1319) 0%, transparent 62%),
+    linear-gradient(150deg, #1B232E 0%, #0E1319 100%);
+}
+
+.content-image::after {
+  /* 一条斜向高光，让占位块看起来像"有内容的图"，不是纯色块 */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.06) 50%, transparent 62%);
+}
+
+.content-image span {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.content-body {
+  margin: 0 0 26px;
+  font-size: 16px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.content-note {
+  margin: 0;
+  padding: 14px 18px;
+  border-left: 2px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  background: rgba(24, 95, 165, 0.16);
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.content-note:empty {
+  display: none;
+}
+
+/* 内容页打开时，画布的鼠标样式不受影响 */
+@media (max-width: 480px) {
+  .content-panel {
+    padding: 36px 0 56px;
+  }
+  .content-title {
+    font-size: 24px;
+  }
+  .content-image {
+    height: 180px;
+  }
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>我的第一个项目 · 占位页</title>
+<style>
+  :root {
+    --brand: #185FA5;
+    --brand-soft: #E6F1FB;
+    --ink: #1B2430;
+    --ink-soft: #5B6B7C;
+    --line: #DCE4EC;
+    --bg: #F4F7FA;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+  }
+  .card {
+    width: 100%;
+    max-width: 620px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 40px;
+  }
+  .tag {
+    display: inline-block;
+    margin: 0 0 18px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  h1 { margin: 0 0 12px; font-size: 26px; letter-spacing: -0.01em; }
+  .lead { margin: 0 0 28px; color: var(--ink-soft); }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+  .list { margin: 0; padding: 0; list-style: none; }
+  .list li { display: flex; gap: 12px; font-size: 14px; color: var(--ink-soft); }
+  .list li + li { margin-top: 10px; }
+  .list b { color: var(--ink); font-weight: 500; }
+  .dot { color: var(--brand); }
+  footer { margin-top: 28px; font-size: 12px; color: #8A98A6; }
+  @media (max-width: 480px) {
+    .card { padding: 28px 22px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <p class="tag">Day 2 · 首次提交</p>
+    <h1>我的第一个项目</h1>
+    <p class="lead">这是一个占位页。它现在唯一的作用，是证明「本地文件 → GitHub 仓库」这条路已经走通。</p>
+    <hr />
+    <ul class="list">
+      <li><span class="dot">·</span><span><b>现在</b>　只有这一个静态页面，没有任何交互</span></li>
+      <li><span class="dot">·</span><span><b>之后</b>　Day 7 会把它换成真正的 MVP 页面</span></li>
+    </ul>
+    <footer>vibe-coding-project</footer>
+  </main>
+</body>
+</html>
