@@ -6,6 +6,12 @@
 # 依赖目录
 node_modules/
 
+# 构建产物 —— 由 npm run build 生成，源码才是要提交的东西
+dist/
+
+# 本地 AI 助手的记忆与配置 —— 属于本机工作记录，不是项目源码
+.workbuddy/
+
 # Python 虚拟环境与缓存
 .venv/
 venv/

@@ -1,0 +1,308 @@
+/* ============================================================
+   物件清单页样式 —— Day 8（板块① 搭骨架 ／ 板块③ 接数据）
+   沿用 PRD F6.3 的既有基调：浅色科技蓝，主色 #185FA5
+   （与 src/style.css 的变量同名同值，保证两页风格统一）
+
+   四态切换规则在文件末尾：容器上的 data-state 决定放谁出来。
+   板块③ 起，data-state 由 src/catalog/main.js 自动切换，不再手改。
+   ============================================================ */
+
+:root {
+  --brand: #185FA5;
+  --brand-deep: #14507F;
+  --brand-soft: #E6F1FB;
+  --ink: #1B2430;
+  --ink-soft: #5B6B7C;
+  --line: #DCE4EC;
+  /* 卡片与状态块的边界线，单独一档。
+     为什么要跟 --line 分开：卡片是白的，页面底 #F4F7FA 也几乎白，
+     两者只差 1.08:1 —— 也就是说「卡片在哪儿」全靠这条边框说。
+     而 --line 对页面底只有 1.19:1（非文字对比门槛是 3:1，实测数据）。
+     --line-strong 对页面底 3.00:1、对白卡片 3.23:1，两侧都过关。 */
+  --line-strong: #6295B8;
+  --bg: #F4F7FA;
+  --card: #FFFFFF;
+  --danger: #B7352B;
+  --danger-soft: #FDEDEA;
+  --danger-line: #F0C8C1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 页头 ─────────────────────────────────────────────── */
+
+.cat-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.cat-header {
+  margin-bottom: 24px;
+}
+
+.cat-eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--brand);
+}
+
+.cat-title {
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.cat-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+/* 计数只在「有数据」时出现（方案 B：整行随状态显示/隐藏）。
+
+   为什么这行也要跟着状态走：它和卡片是同一份数据的两种呈现。
+   数据还没到手时显示一个空行，页头看起来像缺了一块；
+   数据为空时显示「共 0 件」，又不如空态那段话讲得清楚。
+   既然同源，就该同生同灭 —— 判据直接借用 surface 的状态，不另设一套。
+
+   ⚠️ 挂在哪一级很关键（这里原来写错、并且从来没生效过）：
+   :has() 是「看自己里面有没有符合条件的后代」，它只能顺着子孙往下找，
+   够不着兄弟。而 .cat-surface 是 .cat-header 的**兄弟**，不是它的后代
+   （结构：.cat-page > [.cat-header, .cat-surface]）。
+   所以写成 .cat-header:has(...) 永远匹配不上 → 计数行一直不显示。
+   要从 .cat-page 出发才对，它是两者的共同父级。
+
+   顺带说明为什么不能用兄弟选择器（~ / +）：
+   .cat-sub 在 <header> 里面、.cat-surface 在 <header> 外面，
+   两者根本不是兄弟，~ 也够不着。 */
+.cat-page .cat-sub {
+  display: none;
+}
+
+.cat-page:has(.cat-surface[data-state='ready']) .cat-sub {
+  display: block;
+}
+
+/* <noscript> 里的兜底块。
+   选择器从 .cat-header 起头是必要的：卡片将来也可能包在 <li> 里，
+   直接写 li.cat-state--error 会把手伸得太长、误伤以后的列表项。 */
+.cat-header > noscript .cat-state {
+  display: flex;
+  margin-top: 20px;
+  /* 这里原来还把 text-align 改成 left、align-items 改成 flex-start，
+     于是同一个错误态外壳有了两套对齐：noscript 里靠左、四态里居中。
+     同一个东西两种长相，用的人会以为是两种毛病，所以删掉这两行覆盖，
+     让它直接继承 .cat-state 的居中。 */
+}
+
+/* ── 四种状态：默认全部隐藏，由 data-state 决定放谁出来 ── */
+
+.cat-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  /* 296px 不是随手写的：它等于「有数据」态里一行卡片的实际高度
+     （缩略块 132 + 正文块 163 + 上下边框 2 ≈ 297，取整到 4 的倍数 296）。
+     两者对齐之后，切状态时容器不再整体跳一下（原来 268 → 295 要跳 27px）。 */
+  min-height: 296px;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--card);
+  border: 1px dashed var(--line-strong);
+  border-radius: 14px;
+}
+
+.cat-state__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cat-state__text {
+  margin: 0;
+  max-width: 34em;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+/* 状态 1 · 加载中 */
+.cat-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--brand-soft);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: cat-spin 0.8s linear infinite;
+}
+
+@keyframes cat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 状态 3 · 出错：给一点警示色，和另外三态一眼分开 */
+.cat-state--error {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  border-style: solid;
+}
+
+.cat-state--error .cat-state__title {
+  color: var(--danger);
+}
+
+.cat-retry {
+  margin-top: 8px;
+  /* 原来上下 9px，按钮实测只有 37px 高 —— 低于 44px 的触控下限，
+     手机上拇指点不准。改成上下 12px 后实测 43px，仍差 1px，
+     所以再钉一个 min-height：44px。用 min-height 而不是继续加 padding，
+     是因为 padding 13px 会掉出"4 的倍数"这套数，而 44 是明确的外部门槛。 */
+  padding: 12px 20px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 14px;
+  color: #fff;
+  background: var(--brand);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cat-retry:hover {
+  background: var(--brand-deep);
+}
+
+/* ── 状态 4 · 有数据：卡片网格 ─────────────────────────── */
+
+.cat-list {
+  display: none; /* 由 data-state="ready" 打开 */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.obj-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.obj-card:hover {
+  transform: translateY(-3px);
+  border-color: #3F7FB5;
+  box-shadow: 0 12px 26px rgba(24, 95, 165, 0.13);
+}
+
+/* 缩略块：用物件自己的颜色，呼应 3D 里那件东西的自发光 */
+.obj-card__thumb {
+  height: 132px;
+  background-color: var(--obj-color, var(--brand));
+  /* 左上角一片柔光，做出「在发光」的感觉；没有用真实贴图 */
+  background-image:
+    radial-gradient(58% 74% at 32% 26%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 68%),
+    radial-gradient(40% 50% at 82% 88%, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0) 70%);
+}
+
+.obj-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* 原来是 18px 20px 20px —— 上 18、下 20 不等，且 18 不在任何一套倍率上，
+     整块内容的视觉重心会偏上。成套：四边同值。 */
+  padding: 20px;
+}
+
+.obj-card__index {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--brand);
+}
+
+.obj-card__name {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.obj-card__excerpt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  /* 假数据长短不一，统一截到三行，卡片高度才整齐 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── 四态切换：容器上的 data-state 决定放谁出来 ───────────
+   四块状态内容在 HTML 里是同时存在的，靠这几条规则决定显示哪一块。
+   好处：切换不产生、不销毁节点，只是改一次属性，不会闪。
+   data-state 的取值由 src/catalog/main.js 切换。 */
+
+.cat-surface[data-state='loading'] .cat-state--loading,
+.cat-surface[data-state='empty'] .cat-state--empty,
+.cat-surface[data-state='error'] .cat-state--error {
+  display: flex;
+}
+
+.cat-surface[data-state='ready'] .cat-list {
+  display: grid;
+}
+
+/* ── 窄屏 ───────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .cat-page {
+    padding: 40px 16px 64px;
+  }
+
+  .cat-title {
+    font-size: 24px;
+  }
+
+  .cat-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-spinner {
+    animation-duration: 3s;
+  }
+
+  .obj-card {
+    transition: none;
+  }
+}

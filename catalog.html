@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>物件清单 · 3D 探索房间</title>
+  <link rel="stylesheet" href="/src/catalog/catalog.css" />
+</head>
+<body>
+  <!--
+    物件清单页 —— Day 8（板块① 搭骨架 ／ 板块③ 接数据）
+
+    一句话规格：
+      每件物件一张卡片（色块 + 名称 + 一句配文），数据从本地假数据文件读，
+      页面要有加载中、有数据、空、出错四种状态。
+
+    当前进度：
+      卡片由 src/catalog/main.js 从 src/data/objects.js 渲染，不再写在 HTML 里
+      （板块③ 已完成）。四态也由代码自动切换：
+      数据没到 → loading ／ 有内容 → ready ／ 数组为空 → empty ／ 读取出错 → error
+      想手动看某个状态，控制台里跑 window.__catalog.setState('empty')。
+
+    四态的取值：loading / ready / empty / error
+
+    <noscript> 是第五种情况，不算「四态」之一：
+    上面四态全部发生在 JS 跑起来之后，而这种情况连一行 JS 都没执行过。
+    语句放在页头里，是为了让人在页面顶部马上看到交代，
+    而不是先看到一片空白、再自己找原因。
+  -->
+
+  <div class="cat-page">
+    <header class="cat-header">
+      <p class="cat-eyebrow">3D 探索房间 · 工作版</p>
+      <h1 class="cat-title">物件清单</h1>
+      <!-- 这行计数由 src/catalog/main.js 填。
+           内容刻意留空：手写一个「共 3 件」会与渲染结果冲突，计数只留一处来源 -->
+      <p class="cat-sub" data-role="summary"></p>
+
+      <!-- JS 完全没跑起来时的兜底提示。
+           为什么在 <noscript> 里再套一层 .cat-state--error 的外壳：
+           这样它自动继承错误态的样式（浅红底 + 边框），不必为它单独写一套 CSS，
+           状态之间长得像，用户不会觉得是两种毛病 -->
+      <noscript>
+        <div class="cat-state cat-state--error">
+          <p class="cat-state__title">物件清单没能显示</p>
+          <p class="cat-state__text">
+            卡片是由 JavaScript 渲染的，当前浏览器没有执行它。
+            请检查浏览器是否禁用了 JavaScript，或换一个浏览器再打开本页。
+          </p>
+        </div>
+      </noscript>
+    </header>
+
+    <!-- data-state 先给 loading：数据到手前，先别让"空"的样子露出来。
+         若留空或写成 ready，会闪一下空列表再跳出卡片 —— 那一下闪烁就是布局跳动 -->
+    <main class="cat-surface" data-role="surface" data-state="loading">
+
+      <!-- ── 状态 1 · 加载中（PRD F1.4 / C1 的前端表现）── -->
+      <section class="cat-state cat-state--loading" aria-live="polite">
+        <div class="cat-spinner" aria-hidden="true"></div>
+        <p class="cat-state__text">正在读取物件清单…</p>
+      </section>
+
+      <!-- ── 状态 2 · 空（最容易漏掉的那一个：不报错、不卡顿，只是没有东西）── -->
+      <section class="cat-state cat-state--empty">
+        <p class="cat-state__title">这里还什么都没有</p>
+        <p class="cat-state__text">物件清单是空的。往数据文件里加一件物件，它就会出现在这里——不需要改页面代码。</p>
+      </section>
+
+      <!-- ── 状态 3 · 出错（带重试入口，对应 PRD C1「不允许出现纯黑屏」）── -->
+      <section class="cat-state cat-state--error">
+        <p class="cat-state__title">物件清单没能读出来</p>
+        <p class="cat-state__text" data-role="error-text">数据读取失败。可以重试一次，若仍然不行，请检查数据文件是否完整。</p>
+        <button class="cat-retry" type="button">重试</button>
+      </section>
+
+      <!-- ── 状态 4 · 有数据 ──
+           卡片由 src/catalog/main.js 从数据文件渲染，这里刻意保持为空：
+           页面上没有任何一条"物件"，页面却显示出了物件 —— 这才说明是渲染出来的 -->
+      <ul class="cat-list" data-role="list"></ul>
+
+    </main>
+  </div>
+
+  <script type="module" src="/src/catalog/main.js"></script>
+</body>
+</html>
