@@ -3,13 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3D 探索房间 · 工作版</title>
+  <title>海风 · 画中的一生</title>
 </head>
 <body>
-  <!-- Three.js 画布挂载点 -->
   <div id="app"></div>
-
-  <!-- Vite 的入口：从这一行开始，模块化的 JS 会被打包 -->
+  <header class="wind-heading" aria-label="画作信息">
+    <span class="wind-heading__index">01 / 画中的一生</span>
+    <h1>海风</h1>
+    <span class="wind-heading__artist">ANDREW WYETH · WIND FROM THE SEA</span>
+  </header>
+  <div class="wind-loading" aria-live="polite">
+    <span class="wind-loading__title">海风</span>
+    <span class="wind-loading__status">画面正在显现</span>
+  </div>
+  <span class="wind-scroll-hint">拖动前行</span>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

@@ -25,3 +25,17 @@ Thumbs.db
 
 # 日志
 *.log
+
+# ------------------------------------------------------------
+# 大体积素材：不进仓库（公开仓库一旦提交就永久留在历史里）
+# ------------------------------------------------------------
+# Tripo 导出的原始模型，仅作结构参考
+wind-from-sea-source.blend
+wind-from-sea-source.blend1
+# 已被否定的旧网页模型，页面不再加载
+public/wind-window.glb
+# Blender 自动备份与离线渲染检查图，需要时本地重新导出
+art/*.blend1
+art/sea-wind-oblique-check.png
+art/sea-wind-straight-check.png
+art/sea-wind-still-preview.png

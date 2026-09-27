@@ -18,7 +18,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: #141A20;
+  background: #111813;
   color: var(--ink);
   font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
   /* 3D 场景铺满窗口，页面本身不滚动 —— 内容页是独立覆盖层，有它自己的滚动 */
@@ -35,6 +35,239 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  touch-action: none;
+}
+
+.wind-cue {
+  position: absolute;
+  z-index: 5;
+  right: clamp(22px, 5vw, 70px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 19px 11px 11px;
+  border: 1px solid rgba(232, 225, 205, 0.38);
+  border-radius: 999px;
+  background: rgba(10, 17, 15, 0.78);
+  color: #f0e9d9;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  /* 抬起用 260ms，按下由 .is-pressed 覆盖成 90ms —— 之前两者都是 .5s，手感发黏 */
+  transition: opacity .5s, background .3s, transform 260ms cubic-bezier(.22, .61, .36, 1), border-color .4s;
+}
+
+.wind-cue:hover,
+.wind-cue:focus-visible {
+  background: rgba(46, 56, 48, 0.94);
+  border-color: rgba(242, 231, 204, 0.72);
+}
+
+/* 加练：键盘操作时也要看得见焦点在哪 —— 只靠 hover 的变色是不够的 */
+.wind-cue:focus-visible {
+  outline: 2px solid #EDE7D8;
+  outline-offset: 3px;
+}
+
+/* 指尖反馈第一层：按下陷一下。只压到 0.97，不再整颗缩小；
+   90ms 落下、260ms 抬起，快慢对称才不黏 */
+.wind-cue.is-pressed {
+  transform: translateY(-50%) scale(0.97);
+  transition: transform 90ms ease-out, opacity .5s, background .3s, border-color .4s;
+}
+
+.wind-cue.is-listening {
+  border-color: rgba(242, 231, 204, 0.72);
+}
+
+/* 指尖反馈第二层：从落点向外扩散的一圈细光环，760ms 边扩边淡。
+   之前是 10px 实心圆放大 26 倍，等于"按钮里炸开一团白"，太吵。
+   线宽随 scale 一起放大，所以起点 240px、线宽 1px，全程都是细线。 */
+.wind-cue__ripple {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  margin: -120px 0 0 -120px;
+  border: 1px solid rgba(242, 231, 204, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: wind-ripple 760ms cubic-bezier(.22, .61, .36, 1) forwards;
+}
+
+@keyframes wind-ripple {
+  from { transform: scale(0.08); opacity: 0; }
+  18% { opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+
+.wind-cue.is-gone {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(16px, -50%);
+}
+
+.wind-cue__mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(226, 218, 195, 0.16);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wind-heading {
+  position: fixed;
+  top: clamp(22px, 5vw, 58px);
+  left: clamp(22px, 5vw, 70px);
+  z-index: 4;
+  color: #e6e0d1;
+  pointer-events: none;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, .38);
+  opacity: 0;
+  transform: translateY(9px);
+  transition: opacity 1.4s ease .5s, transform 1.4s ease .5s;
+}
+
+body.is-turned .wind-heading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wind-heading__index,
+.wind-heading__artist {
+  display: block;
+  color: rgba(235, 226, 208, .68);
+  font-size: 10px;
+  letter-spacing: .2em;
+}
+
+.wind-heading h1 {
+  margin: 9px 0 10px;
+  font-family: Georgia, 'Songti SC', 'SimSun', serif;
+  font-size: clamp(36px, 4vw, 60px);
+  font-weight: 400;
+  letter-spacing: .18em;
+  line-height: 1;
+}
+
+/* 一次性提示条：贴在按钮正下方，把"生效了"用文字说出口，2.6s 后自行退场 */
+.wind-toast {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  margin-top: 38px;
+  right: clamp(22px, 5vw, 70px);
+  padding: 8px 15px;
+  border: 1px solid rgba(242, 231, 204, 0.34);
+  border-radius: 999px;
+  background: rgba(12, 20, 17, 0.9);
+  color: #f0e9d9;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+
+.wind-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wind-story {
+  position: fixed;
+  z-index: 4;
+  bottom: clamp(44px, 9vh, 110px);
+  left: clamp(22px, 5vw, 70px);
+  max-width: 390px;
+  color: #ede7d8;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .65);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1.5s 1.1s, transform 1.5s 1.1s;
+  pointer-events: none;
+}
+
+.wind-story.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wind-story__age {
+  font-size: 11px;
+  letter-spacing: .22em;
+  color: #d1c4a5;
+}
+
+.wind-story p {
+  margin: 12px 0 0;
+  font-family: Georgia, 'Songti SC', 'SimSun', serif;
+  font-size: clamp(17px, 2vw, 23px);
+  line-height: 1.6;
+  letter-spacing: .08em;
+}
+
+.wind-scroll-hint {
+  position: fixed;
+  right: clamp(22px, 5vw, 70px);
+  bottom: clamp(24px, 5vh, 58px);
+  z-index: 4;
+  color: rgba(229, 223, 206, .65);
+  font-size: 10px;
+  letter-spacing: .22em;
+  writing-mode: vertical-rl;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease 2.2s;
+}
+
+body.is-turned .wind-scroll-hint {
+  opacity: 1;
+}
+
+.wind-loading {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #111813;
+  color: #e7e1d2;
+  transition: opacity 1s, visibility 1s;
+}
+
+body.is-ready .wind-loading {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.wind-loading__title {
+  font-family: Georgia, 'Songti SC', 'SimSun', serif;
+  font-size: 44px;
+  letter-spacing: .25em;
+}
+
+.wind-loading__status {
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: #b7b2a4;
+}
+
+@media (max-width: 650px) {
+  .wind-heading__artist { font-size: 8px; }
+  .wind-cue { top: 55%; }
+  .wind-story { right: 24px; }
 }
 
 /* 内容页打开时，画布彻底让出鼠标事件。
