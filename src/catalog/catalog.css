@@ -100,6 +100,84 @@ body {
   display: block;
 }
 
+/* 筛完没有匹配时，容器状态是 empty —— 但这时候计数行必须留着，
+   否则"共 3 件 · 筛出 0 件"这句最有信息量的话反而看不见了。
+   用 data-filtering 单独放行，不放开"数据本来就是空"的那种空态。 */
+.cat-page:has(.cat-surface[data-filtering='on']) .cat-sub {
+  display: block;
+}
+
+/* ── 关键词筛选（Day 12）────────────────────────────────── */
+
+/* 默认隐藏加载态；数据到手（ready）或筛空（empty）时才出现。
+   ⚠️ 空态必须放行：筛成 0 条时状态就是 empty，
+      若把筛选框跟着一起藏了，用户就再也点不到"清空" —— 直接卡死在空页面上。 */
+.cat-search {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cat-page:has(.cat-surface[data-state='ready']) .cat-search,
+.cat-page:has(.cat-surface[data-state='empty']) .cat-search {
+  display: flex;
+}
+
+.cat-search__label {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.cat-search__field {
+  display: flex;
+  gap: 8px;
+}
+
+.cat-search__input {
+  flex: 1;
+  /* 44px 是触控下限，和重试按钮同一条规矩 */
+  min-height: 44px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+
+.cat-search__input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.cat-search__clear {
+  min-height: 44px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--brand);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cat-search__clear:hover {
+  background: var(--brand-soft);
+}
+
+/* 命中关键词的高亮。底色 #FFF0B8 对 --ink #1B2430 约 10:1，
+   远高于正文 4.5:1 的门槛；不用红绿，避免和状态色抢注意力 */
+.cat-mark {
+  padding: 0 1px;
+  color: inherit;
+  background: #FFF0B8;
+  border-radius: 2px;
+}
+
 /* <noscript> 里的兜底块。
    选择器从 .cat-header 起头是必要的：卡片将来也可能包在 <li> 里，
    直接写 li.cat-state--error 会把手伸得太长、误伤以后的列表项。 */

@@ -10,7 +10,12 @@ node_modules/
 dist/
 
 # 本地 AI 助手的记忆与配置 —— 属于本机工作记录，不是项目源码
-.workbuddy/
+# 写法是 .workbuddy/* 而不是 .workbuddy/：Git 的规则是"父目录被排除后，
+# 里面的子项再也加不回来"。所以这里忽略目录内容、保留目录本身，
+# 才能在下一行把 skills 单独放行。
+.workbuddy/*
+# 例外：Skill 是要跟着仓库走的检查标准，不是本机记录；记忆文件仍然忽略
+!.workbuddy/skills/
 
 # Python 虚拟环境与缓存
 .venv/

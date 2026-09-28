@@ -33,8 +33,31 @@
       <p class="cat-eyebrow">3D 探索房间 · 工作版</p>
       <h1 class="cat-title">物件清单</h1>
       <!-- 这行计数由 src/catalog/main.js 填。
-           内容刻意留空：手写一个「共 3 件」会与渲染结果冲突，计数只留一处来源 -->
-      <p class="cat-sub" data-role="summary"></p>
+           内容刻意留空：手写一个「共 3 件」会与渲染结果冲突，计数只留一处来源。
+           aria-live：筛完以后条数变了，读屏用户听不到"画面变了一下"，
+           靠这个属性让浏览器把新内容念出来 -->
+      <p class="cat-sub" data-role="summary" aria-live="polite"></p>
+
+      <!-- ── 关键词筛选（Day 12）──
+           为什么 label 是可见的而不是只留 placeholder：
+           placeholder 里的字一输入就没了，用户回头看不出自己在筛什么；
+           读屏软件也未必念它。label 用 for 绑到输入框的 id，
+           点文字也能聚焦到输入框。 -->
+      <form class="cat-search" role="search" data-role="search">
+        <label class="cat-search__label" for="cat-q">按关键词筛选物件</label>
+        <div class="cat-search__field">
+          <input
+            class="cat-search__input"
+            id="cat-q"
+            name="q"
+            type="search"
+            placeholder="输入关键词，例如「灯」"
+            autocomplete="off"
+          />
+          <!-- 清空按钮 type="button"：写成 submit 或留空会提交表单、刷新页面 -->
+          <button class="cat-search__clear" type="button" data-role="clear" hidden>清空</button>
+        </div>
+      </form>
 
       <!-- JS 完全没跑起来时的兜底提示。
            为什么在 <noscript> 里再套一层 .cat-state--error 的外壳：
@@ -61,10 +84,15 @@
         <p class="cat-state__text">正在读取物件清单…</p>
       </section>
 
-      <!-- ── 状态 2 · 空（最容易漏掉的那一个：不报错、不卡顿，只是没有东西）── -->
-      <section class="cat-state cat-state--empty">
-        <p class="cat-state__title">这里还什么都没有</p>
-        <p class="cat-state__text">物件清单是空的。往数据文件里加一件物件，它就会出现在这里——不需要改页面代码。</p>
+      <!-- ── 状态 2 · 空（最容易漏掉的那一个：不报错、不卡顿，只是没有东西）──
+           Day 12：空态现在有两种成因，文案由 JS 切换 ——
+             数据本来就是空的   →「这里还什么都没有」
+             筛完没有匹配的     →「没有匹配的物件」
+           两者混成一句会误导：前者是"没数据"，后者是"数据有、但你这个词筛不到"。
+           aria-live 同计数行：空态出现时也要念出来，否则读屏用户只听到"列表没了"。 -->
+      <section class="cat-state cat-state--empty" aria-live="polite">
+        <p class="cat-state__title" data-role="empty-title">这里还什么都没有</p>
+        <p class="cat-state__text" data-role="empty-text">物件清单是空的。往数据文件里加一件物件，它就会出现在这里——不需要改页面代码。</p>
       </section>
 
       <!-- ── 状态 3 · 出错（带重试入口，对应 PRD C1「不允许出现纯黑屏」）── -->
