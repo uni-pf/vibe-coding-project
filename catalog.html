@@ -38,6 +38,14 @@
            靠这个属性让浏览器把新内容念出来 -->
       <p class="cat-sub" data-role="summary" aria-live="polite"></p>
 
+      <!-- ── 数据来源标识（Day 17 新增）──
+           为什么必须把"数据从哪来"显式印在页面上：
+           接口不通时页面会降级到本地示例数据，样子和真数据一模一样。
+           不标出来的话，看图的人无法判断屏幕上是不是真数据 ——
+           而 Day 17 的验收标准恰恰要求"显示的是真实数据，不是假数据"。
+           这行字由 src/data/api.js 返回的 source 决定，不是手写的。 -->
+      <p class="cat-source" data-role="source" data-source="loading">数据来源：读取中…</p>
+
       <!-- ── 关键词筛选（Day 12）──
            为什么 label 是可见的而不是只留 placeholder：
            placeholder 里的字一输入就没了，用户回头看不出自己在筛什么；

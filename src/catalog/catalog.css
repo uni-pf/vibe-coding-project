@@ -75,6 +75,35 @@ body {
   color: var(--ink-soft);
 }
 
+/* ── 数据来源标识（Day 17）───────────────────────────────
+   视觉上是"徽标"而不是正文：小字号 + 浅底 + 圆角。
+   为什么不做成醒目的警告色：
+   接口正常时它是日常信息（说明数据是真的），不该每天红着；
+   只有降级到本地示例数据时，[data-source="local"] 才把它染成警示色 ——
+   颜色在这里承担"是否可信"的语义，所以两态必须明显不同。 */
+.cat-source {
+  display: inline-block;
+  margin: 12px 0 0;
+  padding: 3px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  border: 1px solid var(--line);
+}
+
+.cat-source[data-source='local'] {
+  background: #FDF2F0;
+  color: var(--danger);
+  border-color: #EFC9C4;
+}
+
+.cat-source[data-source='loading'] {
+  background: var(--bg);
+  color: var(--ink-soft);
+}
+
 /* 计数只在「有数据」时出现（方案 B：整行随状态显示/隐藏）。
 
    为什么这行也要跟着状态走：它和卡片是同一份数据的两种呈现。

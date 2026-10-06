@@ -1,26 +1,28 @@
 /**
- * 物件清单页入口 —— Day 8 · 板块③（mock 数据渲染）
+ * 物件清单页入口 —— Day 8 建骨架 · Day 12 加筛选 · Day 17 改接真实接口
  *
  * 这一步要证明的事：
  *   页面上的卡片不是手写死的，而是由一个数据数组渲染出来的。
- *   改 src/data/objects.js 里一个字，页面就跟着变 —— 不需要碰任何 HTML 与逻辑代码。
+ *   改数据源里一个字，页面就跟着变 —— 不需要碰任何 HTML 与逻辑代码。
  *   （对应 PRD E1「加物件不改架构」、E2「物件与内容以数据配置形式存在」）
  *
- * 为什么直接用 src/data/objects.js，而不是另造一份"mock 数据"：
- *   那份文件本来就是本地静态数据、不来自网络 —— 它现在就是 mock 数据。
- *   另造一份假的，等于让"真数据"与"假数据"两套并存，
- *   将来接上真实数据源时还得回来删一遍，多一道没意义的手工活。
+ * ── Day 17 的变化：数据不再来自本地文件，而是来自 CloudBase 数据库 ──
+ *   数据源换成了 /api/objects（云函数 haifeng-api 读 PostgreSQL，
+ *   见 api-contract.md）。字段翻译集中在 src/data/api.js，
+ *   本文件里渲染四态的那部分代码**一行都没动** ——
+ *   这正是 Day 8 当初把取数包成 fetchObjects() 的用意：
+ *   换数据源只替换这一个函数体。
+ *
+ *   接口不通时会降级到本地 src/data/objects.js，并在页面上标明"示例数据"。
  *
  * 四种状态（清单里要掌握的那个问题就落在这里）：
  *   loading 数据还没到手
  *   ready   数据到手、且有条目
  *   empty   请求成功了，但一条都没有     ← 最容易漏掉的那个
  *   error   读取失败，给重试入口
- *
- * 为什么要人为留出加载时间：见 DELAY 处注释。
  */
 
-import { objects as RAW_OBJECTS } from '../data/objects.js'
+import { loadObjects } from '../data/api.js'
 
 /** 状态容器与列表容器 */
 const surface = document.querySelector('[data-role="surface"]')
@@ -34,6 +36,9 @@ const inputEl = document.querySelector('#cat-q')
 const clearBtn = document.querySelector('[data-role="clear"]')
 const emptyTitleEl = document.querySelector('[data-role="empty-title"]')
 const emptyTextEl = document.querySelector('[data-role="empty-text"]')
+
+/* ── 数据来源标识（Day 17）── */
+const sourceEl = document.querySelector('[data-role="source"]')
 
 /**
  * 完整数据与当前关键词 —— 筛选用到的全部状态就这两个。
@@ -51,7 +56,9 @@ let keyword = ''
 const EMPTY_COPY = {
   none: {
     title: '这里还什么都没有',
-    text: '物件清单是空的。往数据文件里加一件物件，它就会出现在这里——不需要改页面代码。',
+    // Day 17：数据源已经从本地文件换成数据库，所以"往哪儿加"的说法也得跟着改 ——
+    // 文案里指向一个已经不存在的地方（"数据文件"），比不说更误事
+    text: '数据库里一件物件都没有。往 objects 表里插一行，刷新页面它就会出现——不需要改页面代码。',
   },
   noMatch: {
     title: '没有匹配的物件',
@@ -61,29 +68,22 @@ const EMPTY_COPY = {
 }
 
 /**
- * 人为延迟，单位毫秒。
+ * 数据来源的文案。三种取值对应 api.js 返回的 source，外加读取中的初始态。
  *
- * 为什么要加：真实数据会有网络往返（几十到几百毫秒），加载态天然就会出现。
- * 本项目的数据在本地文件里，读起来是 0 毫秒 —— 加载态会一闪而过、等于看不见，
- * 那这个状态就永远没被人检验过。留一段固定延迟，是让加载态**看得见**，
- * 而不是假装数据来自网络。
- *
- * 想让它立刻出现，把这里改成 0。
+ * 为什么要单独一处定义：这句话是"这张截图算不算证据"的判据。
+ * 散着拼字符串，某天改了一处没改另一处，就会出现页面标"示例数据"但其实是真数据（或反过来）。
  */
-const DELAY = 420
-
-/**
- * 取出数据（本期＝把本地数组返回出去）。
- *
- * 用 Promise + setTimeout 包一层，是为了让"将来换成真实请求"这件事零成本：
- * 真实请求本来就是异步的，接口形状一样，到时候只改这个函数体，
- * 下面渲染四态的代码一行都不用动。
- */
-function fetchObjects() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(RAW_OBJECTS), DELAY)
-  })
+const SOURCE_COPY = {
+  loading: '数据来源：读取中…',
+  api: '数据来源：CloudBase 数据库 · 实时读取 /api/objects',
+  local: '数据来源：本地示例数据（接口不可用，已降级）',
 }
+
+function renderSource(source) {
+  sourceEl.textContent = SOURCE_COPY[source] ?? SOURCE_COPY.local
+  sourceEl.dataset.source = source
+}
+
 
 /* ── 四态的切换：只改 data-state，剩下的交给 CSS ────────── */
 
@@ -164,7 +164,12 @@ function createCard(item, index, kw = '') {
 
   const eyebrow = document.createElement('p')
   eyebrow.className = 'obj-card__index'
-  eyebrow.textContent = `物件 ${String(index + 1).padStart(2, '0')}`
+  // Day 17：接口 JOIN 出了所属阶段（chapters 表），这里一并显示。
+  // 本地降级数据里没有 chapter 字段，所以加了判断 —— 降级时只是少一段字，不会报错。
+  // 附带好处：这行字本身就是"数据来自数据库"的视觉证据 —— 本地数据压根没有它。
+  eyebrow.textContent = item.chapter
+    ? `物件 ${String(index + 1).padStart(2, '0')} · ${item.chapter.title} · ${item.chapter.subtitle}`
+    : `物件 ${String(index + 1).padStart(2, '0')}`
 
   const name = document.createElement('h2')
   name.className = 'obj-card__name'
@@ -253,21 +258,29 @@ function applyFilter() {
 
 async function load() {
   setState('loading')
+  renderSource('loading')
 
+  let result
   try {
-    const items = await fetchObjects()
-
-    // 拿到全集之后，可见内容一律交给 applyFilter 决定 ——
-    // 数据为空、筛不出、筛得出三种情况它都覆盖了，这里不要再分支一次
-    allItems = Array.isArray(items) ? items : []
-    applyFilter()
+    result = await loadObjects()
   } catch (err) {
-    // 出错时把原因显示出来，而不是只给一句"出错了" —— 排障时省一半时间
+    // api.js 内部已经把网络失败兜成"降级到本地数据"了，正常走不到这里。
+    // 留着这条分支，是为了防"降级路径本身也炸了"——那种情况下坚决报错，
+    // 不许把空列表当成"没有物件"展示出来（那是最容易骗过自己的假成功）。
     document.querySelector('[data-role="error-text"]').textContent =
-      `数据读取失败：${err?.message ?? '未知原因'}。可以重试一次；若仍不行，请检查数据文件是否完整。`
+      `数据读取失败：${err?.message ?? '未知原因'}。可以重试一次；若仍不行，请检查网络连接。`
     console.error('[catalog] 读取物件清单失败', err)
     setState('error')
+    return
   }
+
+  const { items, source } = result
+  renderSource(source)
+
+  // 拿到全集之后，可见内容一律交给 applyFilter 决定 ——
+  // 数据为空、筛不出、筛得出三种情况它都覆盖了，这里不要再分支一次
+  allItems = Array.isArray(items) ? items : []
+  applyFilter()
 }
 
 retryBtn.addEventListener('click', load)
@@ -318,11 +331,14 @@ clearBtn.addEventListener('click', resetFilter)
      __catalog.setState('error')     看错误态（重试按钮可点）
      __catalog.reload()              回到正常
 
-   想永久地看空态：把 src/data/objects.js 里的数组清成 []，保存即生效。
+   想永久地看空态：把 objects 表清空（Day 17 起数据来自数据库），刷新即生效。
 
    筛选用（Day 12）：
      __catalog.filter('灯')          按关键词筛一次
      __catalog.filter('')            清空，回到全集
+
+   查数据来源（Day 17）：
+     __catalog.source()              返回 'api' 或 'local'
 ──────────────────────────────────────────────────────────── */
 window.__catalog = {
   setState,
@@ -332,6 +348,10 @@ window.__catalog = {
     keyword = inputEl.value.trim()
     clearBtn.hidden = inputEl.value === ''
     applyFilter()
+  },
+  /** 当前数据来自接口还是本地降级 —— 判定"截图里的数据是不是真的"就看这个 */
+  source() {
+    return surface.ownerDocument.querySelector('[data-role="source"]').dataset.source
   },
 }
 
