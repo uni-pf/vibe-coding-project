@@ -1,0 +1,10 @@
+GET /api/objects | 200|2.273437
+GET /api/objects?limit=2 | 200|0.575496
+GET /api/favorites (写入前) | 200|0.593350
+POST /api/favorites obj-05 (新) | 200|0.644279
+GET /api/favorites (写入后读回) | 200|0.544466
+POST obj-05 (重复) | 409|0.518514
+POST {} (缺字段) | 400|0.520247
+GET /api/nope | 404|0.576713
+DELETE /api/objects | 405|0.392600
+GET catalog.html | 200|0.823237

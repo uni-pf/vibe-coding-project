@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Day 21 · 第 3 周验收 · 《海风》</title>
+<style>
+  :root{
+    --ink:#1c2b3a; --sub:#5a6b7d; --line:#dbe4ee; --brand:#185FA5; --brand-soft:#eaf2fa;
+    --ok:#1a7f4b; --ok-bg:#e9f6ef; --warn:#a05a00; --warn-bg:#fdf3e3; --fail:#b3261e; --fail-bg:#fceceb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f8fc;color:var(--ink);
+       font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;font-size:15px;line-height:1.65}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 26px 40px}
+  header.top{border-left:6px solid var(--brand);padding:4px 0 4px 16px;margin-bottom:22px}
+  header.top h1{margin:0;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:6px 0 0;color:var(--sub);font-size:13px}
+  section.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin-bottom:26px;
+               box-shadow:0 1px 3px rgba(24,95,165,.06)}
+  section.card>h2{margin:0 0 4px;font-size:19px;color:var(--brand)}
+  section.card>p.note{margin:0 0 14px;color:var(--sub);font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{background:var(--brand-soft);color:var(--brand);text-align:left;padding:8px 10px;border:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 10px;border:1px solid var(--line);vertical-align:top}
+  tr:nth-child(even) td{background:#fafcfe}
+  .pill{display:inline-block;padding:1px 9px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+  .ok{color:var(--ok);background:var(--ok-bg)} .warn{color:var(--warn);background:var(--warn-bg)} .fail{color:var(--fail);background:var(--fail-bg)}
+  code{background:#f0f4f9;border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:12.5px;
+       font-family:Consolas,"Courier New",monospace}
+  a{color:var(--brand)}
+  pre{background:#0e2233;color:#dbe9f7;border-radius:8px;padding:14px 16px;font-size:12.5px;line-height:1.55;
+      font-family:Consolas,monospace;overflow-x:auto;margin:10px 0 0}
+  pre b{color:#8fd3ff;font-weight:600}
+  .flow{background:var(--brand-soft);border:1px solid #cfe1f3;border-radius:8px;padding:14px 18px;
+        font-family:Consolas,monospace;font-size:13px;line-height:1.7;white-space:pre;overflow-x:auto}
+  .legend{font-size:12px;color:var(--sub);margin:2px 0 14px}
+  .legend span{margin-right:14px}
+  footer{color:var(--sub);font-size:12px;text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Day 21 · 第 3 周验收表 + 同伴交叉验证 + 演示提纲</h1>
+  <p>被测对象：《海风》物件清单 + CloudBase 后端（EnvId example-d3gz7b0wea9b8bb2e）｜验收时间 2026-10-07 22:17–22:45｜所有证据当日实测取回</p>
+</header>
+
+<!-- ═══════════════ 区块一 ═══════════════ -->
+<section class="card" id="s1">
+  <h2>区块一 · 周验收表（逐项有证据）</h2>
+  <p class="legend"><span class="pill ok">✅ 通过</span><span class="pill warn">⚠️ 部分 / 降级</span><span class="pill fail">❌ FAIL</span>　周范围：Day 16（数据库）/ Day 17（读接口）/ Day 18（写接口）；Day 19–20 无产物，如实标记</p>
+  <table>
+    <tr><th style="width:44px">#</th><th style="width:320px">验收项</th><th style="width:88px">状态</th><th>证据（链接可点）</th></tr>
+    <tr><td>W1</td><td>数据库表结构：3 表 + 外键 + 唯一约束</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="../db/schema.sql">db/schema.sql</a> · <a href="../cloudbase/migrations/20261006191008_create_core_schema.sql">migration: create_core_schema</a> · 只读 SQL 实测行数 <b>chapters=5 / objects=5 / favorites=5</b>（10-07）</td></tr>
+    <tr><td>W2</td><td>种子数据可重复执行（幂等）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="../db/seed.sql">db/seed.sql</a>（ON CONFLICT）；Day 16 实测重跑后 5/5/2 未翻倍</td></tr>
+    <tr><td>W3</td><td>权限双层 GRANT + RLS（含匿名访客）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="../cloudbase/migrations/20261006191200_grant_and_rls.sql">migration: grant_and_rls</a> · <a href="../cloudbase/migrations/20261006192353_grant_favorites_anon.sql">migration: grant_favorites_anon</a></td></tr>
+    <tr><td>W4</td><td>接口公网可访问（GET 读）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="https://example-d3gz7b0wea9b8bb2e-1500064837.ap-shanghai.app.tcloudbase.com/api/objects">…tcloudbase.com/api/objects</a> → <b>HTTP 200</b> · <a href="day21-01-api-objects.json">day21-01-api-objects.json</a>（5 条真实物件）</td></tr>
+    <tr><td>W5</td><td>真实写入 → 落库 → 读回（毫秒级一致）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="day21-04-post-new.json">day21-04-post-new.json</a>：<b>id=6 · createdAt=2026-10-07T22:17:14.043172+08:00</b> → <a href="day21-05-favorites-after.json">day21-05 读回同一行同一毫秒</a>；DB 行数 4→5</td></tr>
+    <tr><td>W6</td><td>重复写入拦截：409 + 中文</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="day21-06-post-duplicate.json">day21-06-post-duplicate.json</a>：「朝海的窗（预告）」已经在收藏里了</td></tr>
+    <tr><td>W7</td><td>缺字段校验：400 + 中文</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="day21-07-post-missing.json">day21-07-post-missing.json</a>：缺少必填字段：object_code</td></tr>
+    <tr><td>W8</td><td>路径/方法兜底：404 / 405 中文</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="day21-08-404.json">day21-08-404.json</a> · <a href="day21-09-405.json">day21-09-405.json</a></td></tr>
+    <tr><td>W9</td><td>前端接通真实数据（来源徽标 + JOIN 字段上屏）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="day21-11-page-public.png">day21-11-page-public.png</a>（共 5 件 · 来源：CloudBase 数据库）· <a href="day21-12-page-dom.html">day21-12-page-dom.html</a></td></tr>
+    <tr><td>W10</td><td>接口契约先行（先改契约再改代码）</td><td><span class="pill ok">✅ 通过</span></td>
+        <td><a href="../api-contract.md">api-contract.md</a> §0.2 状态码硬规则 · §4 错误码总表</td></tr>
+    <tr><td>W11</td><td>页面运行无报错</td><td><span class="pill warn">⚠️ 部分</span></td>
+        <td><a href="day21-13-page-console.txt">day21-13-page-console.txt</a>：<b>无 JS 异常</b>；唯一 404 来自浏览器自动请求 /favicon.ico（页面 4 个资源全 200）→ <b>记入下周</b>，今日不修</td></tr>
+    <tr><td>W12</td><td>objects 表补 size 列（Day 17 发现的真实缺字段）</td><td><span class="pill fail">❌ FAIL</span></td>
+        <td>未做：需 ALTER TABLE，属改表结构、未获授权。影响：接口不返回 size，3D 场景按 undefined 处理</td></tr>
+    <tr><td>W13</td><td>Day 19–20 产出</td><td><span class="pill fail">❌ FAIL</span></td>
+        <td>仓库无 Day 19/20 任何文件与提交（最后一次提交为 Day 18 <code>7a25911</code>）→ <b>未执行</b></td></tr>
+    <tr><td>W14</td><td>同伴（真人）交叉验证</td><td><span class="pill warn">⚠️ 降级</span></td>
+        <td>无真人同伴参与；由<b>独立 AI 复核</b>替代（见区块二），对应今日清单「卡住降级」路径</td></tr>
+    <tr><td>W15</td><td>演示提纲写出并完整走通一遍</td><td><span class="pill ok">✅ 通过</span></td>
+        <td>见区块三；四段全部实际执行（走通记录附于提纲末尾）</td></tr>
+  </table>
+  <p class="note" style="margin-top:12px">当日接口实测（<a href="day21-http-status.txt">day21-http-status.txt</a> 全文，10/10 与契约一致，无 5xx）：</p>
+  <pre>GET  /api/objects                    <b>200</b>   GET  /api/favorites (写入前)   <b>200</b>
+GET  /api/objects?limit=2            <b>200</b>   POST /api/favorites obj-05(新) <b>200</b>
+POST /api/favorites obj-05(重复)     <b>409</b>   GET  /api/favorites (读回)     <b>200</b>
+POST /api/favorites {} (缺字段)      <b>400</b>   GET  /api/nope                 <b>404</b>
+DEL  /api/objects                    <b>405</b>   GET  catalog.html              <b>200</b></pre>
+</section>
+
+<!-- ═══════════════ 区块二 ═══════════════ -->
+<section class="card" id="s2">
+  <h2>区块二 · 同伴交叉验证（三行结论）</h2>
+  <p class="note">复核人：<b>独立 AI 会话</b>——全新上下文，未读取主执行方的结论与证据文件，独立执行 curl 取证后给出下表。
+     <b>如实说明：本次无真人同伴参与</b>，属清单「卡住降级」条款的替代路径；后续如有同学复核，可在此追加一行真人结论。</p>
+  <table>
+    <tr><th style="width:110px">结论</th><th style="width:90px">判定</th><th>证据（复核人实际执行的命令 + 关键返回）</th></tr>
+    <tr><td><b>可打开</b></td><td><span class="pill ok">PASS</span></td>
+        <td><code>curl -s -o /dev/null -w "%{http_code}" …/catalog.html</code> → <b>200</b>；<code>curl -s …/catalog.html | grep -o "&lt;title&gt;[^&lt;]*&lt;/title&gt;"</code> → <b>物件清单 · 3D 探索房间</b></td></tr>
+    <tr><td><b>可读写</b></td><td><span class="pill ok">PASS</span></td>
+        <td><code>GET /api/favorites</code> 含 <code>{"id":6,"objectCode":"obj-05","createdAt":"2026-10-07T22:17:14.043172+08:00"}</code>（当天写入并落库）；<code>POST {"object_code":"obj-05"}</code> → <b>409</b> + <code>DUPLICATE_FAVORITE</code> 中文提示</td></tr>
+    <tr><td><b>无报错</b></td><td><span class="pill ok">PASS</span></td>
+        <td><code>GET /api/objects</code> → <code>ok:true</code>，code/name/position/chapter.title 各 5 条齐全；批量探测 <b>200/200/200/409</b>，全程无 5xx</td></tr>
+  </table>
+  <p class="note" style="margin-top:12px">复核人「意外发现」栏：<b>无</b>。核对项与预期完全一致。</p>
+</section>
+
+<!-- ═══════════════ 区块三 ═══════════════ -->
+<section class="card" id="s3">
+  <h2>区块三 · 演示提纲（用户问题 → 核心流程 → 提示词改写 → 验证方式）</h2>
+
+  <p style="margin:12px 0 4px"><b>① 用户问题</b></p>
+  <p style="margin:0">《海风》此前物件的名称、坐标、配文<b>全部写死在前端本地假数据里</b>——改一行文案要改代码重新打包；「收藏」这类需要记住用户操作的功能，纯静态页面根本做不了。
+  这周要解决：<b>页面显示真实可维护的数据，且用户的写操作能真正存下来。</b></p>
+
+  <p style="margin:14px 0 4px"><b>② 核心流程</b></p>
+  <div class="flow">浏览器 catalog.html
+   │ GET /api/objects ← 读：物件清单（JOIN 出阶段名与年代）
+   ▼
+公网网关 /api ──► 云函数 haifeng-api ──► PostgreSQL（chapters / objects / favorites）
+   ▲                                       ▲
+   │ POST /api/favorites {"object_code":…} ← 写：先查重（友好提示）→ 唯一约束兜底（真拦截）
+   └───────────────────────────────────────┘
+读取失败：前端降级本地数据，「来源徽标」标明 api / local，不静默吞错</div>
+
+  <p style="margin:14px 0 4px"><b>③ 提示词改写</b>（原始一句话 → 可执行的任务约束）</p>
+  <table>
+    <tr><th style="width:280px">原始需求（课程清单原样）</th><th>改写后（落到本项目的约束）</th></tr>
+    <tr><td>「接真实热搜 + 收藏」</td><td>项目里没有热搜资源 → 映射为<b>项目自己的资源</b>：<code>/api/hot</code> → <code>/api/objects</code>，收藏原样保留</td></tr>
+    <tr><td>（未提错误处理）</td><td>硬规则三条：HTTP 状态码必须与 ok 一致；error.message 必须是可直接展示的中文；错误码集中在契约 §4，代码不许出现表外语码</td></tr>
+    <tr><td>（未提数据口径）</td><td>匿名访客统一 <code>_openid=''</code>；favorites 需对 anon 授权 + RLS 策略，否则接口<b>静默返回空数组</b></td></tr>
+    <tr><td>（未提协作方式）</td><td><b>先改 api-contract.md 再改代码</b>；代码与契约不一致时，以契约为准</td></tr>
+  </table>
+
+  <p style="margin:14px 0 4px"><b>④ 验证方式</b>（每条都已实际执行）</p>
+  <table>
+    <tr><th style="width:44px">#</th><th style="width:360px">演示动作</th><th>结果（证据）</th></tr>
+    <tr><td>1</td><td>真实浏览器打开公网页面（穿透测试域名确认页）</td><td>5 件真数据上屏，来源徽标 = CloudBase 数据库 → <a href="day21-11-page-public.png">day21-11 截图</a></td></tr>
+    <tr><td>2</td><td>GET /api/objects?limit=2</td><td>200，正好 2 条 → <a href="day21-02-api-objects-limit2.json">day21-02</a></td></tr>
+    <tr><td>3</td><td>POST obj-05 → GET 读回</td><td>200 → id=6、createdAt 逐毫秒一致 → <a href="day21-04-post-new.json">day21-04</a> / <a href="day21-05-favorites-after.json">day21-05</a></td></tr>
+    <tr><td>4</td><td>重复 POST / 缺字段 / 404 / 405</td><td>409 / 400 / 404 / 405，全部中文 → <a href="day21-06-post-duplicate.json">06</a> <a href="day21-07-post-missing.json">07</a> <a href="day21-08-404.json">08</a> <a href="day21-09-405.json">09</a></td></tr>
+    <tr><td>5</td><td>控制台报错收集</td><td>无 JS 异常；1 条 favicon 404（记入下周）→ <a href="day21-13-page-console.txt">day21-13</a></td></tr>
+  </table>
+  <p class="note" style="margin-top:12px"><b>走通结论：四段提纲按 1→5 完整走了一遍，全部有据。</b></p>
+</section>
+
+<footer>《海风》· Day 21 周验收 · 证据文件与本页同目录（evidence/）· 生成于 2026-10-07</footer>
+</div>
+</body>
+</html>
