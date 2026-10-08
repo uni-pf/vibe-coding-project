@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Day 22 截图一 · PATCH 前后对照</title>
+<style>
+  :root{
+    --ink:#0f172a; --sub:#5b6b7f; --line:#dbe4ee; --bg:#f4f8fc;
+    --brand:#185FA5; --brand-soft:#e8f1fa;
+    --before:#7a8698; --after:#c0392b; --ok:#1c7c54; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{width:1180px;margin:0 auto;padding:34px 40px 40px}
+  header{border-bottom:3px solid var(--brand);padding-bottom:16px;margin-bottom:22px}
+  .kicker{font-size:13px;letter-spacing:.16em;color:var(--brand);font-weight:700}
+  h1{margin:8px 0 6px;font-size:28px;letter-spacing:.01em}
+  .sub{color:var(--sub);font-size:14px;line-height:1.7}
+  .url{font-family:Consolas,monospace;font-size:12.5px;color:#334155;background:#fff;
+       border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin-top:8px}
+  h2{font-size:16px;margin:26px 0 10px;padding-left:10px;border-left:4px solid var(--brand)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+  .req{font-family:Consolas,monospace;font-size:13px;background:#0f172a;color:#e2e8f0;
+       border-radius:8px;padding:14px 16px;line-height:1.75;white-space:pre-wrap}
+  .req .m{color:#7dd3fc;font-weight:700}
+  .req .s{color:#86efac}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--brand-soft);color:var(--brand);font-size:13px;letter-spacing:.04em}
+  tr:last-child td{border-bottom:none}
+  code{font-family:Consolas,monospace;font-size:13px;background:#f1f5f9;padding:1px 6px;border-radius:4px}
+  .fname{font-family:Consolas,monospace;color:#334155}
+  .b{color:var(--before);text-decoration:line-through;text-decoration-color:#c8d2de}
+  .a{color:var(--after);font-weight:700}
+  .same{color:var(--sub)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px}
+  .pill-ok{background:#e5f5ec;color:var(--ok)}
+  .pill-warn{background:#fdf1e3;color:var(--warn)}
+  .foot{margin-top:22px;font-size:12.5px;color:var(--sub);line-height:1.8}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  .mini{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .mini h3{margin:0 0 8px;font-size:13px;color:var(--brand);letter-spacing:.04em}
+  .mini pre{margin:0;font-family:Consolas,monospace;font-size:12.5px;line-height:1.7;color:#334155;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="kicker">DAY 22 · 板块 ① 改（PATCH）· 第 4 周</div>
+    <h1>改一条数据，并且看得见它变了</h1>
+    <div class="sub">
+      测试对象 <code>obj-02</code>（摊开的笔记本）。同时改两个字段：一个文本字段、一个颜色字段。<br>
+      下面的「改前 / 改后」均取自两次真实 <code>GET /api/objects</code> 的返回原文，不是手写的对照表。
+    </div>
+    <div class="url">https://example-d3gz7b0wea9b8bb2e-1500064837.ap-shanghai.app.tcloudbase.com/api</div>
+  </header>
+
+  <h2>一、发出的请求</h2>
+  <div class="req"><span class="m">PATCH</span> /api/objects/obj-02
+Content-Type: application/json
+
+{
+  <span class="s">"memory_caption"</span>: "Day 22 改后值 · 由 PATCH 写入",
+  <span class="s">"color"</span>: "#FF8A5B"
+}</div>
+
+  <h2>二、字段级前后对照（GET 返回原文）</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th style="width:210px">字段</th><th style="width:290px">改之前（GET）</th><th style="width:290px">改之后（GET）</th><th>结论</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fname">obj-02 · color</td>
+          <td><span class="b">#7FC4F5</span></td>
+          <td><span class="a">#FF8A5B</span></td>
+          <td><span class="pill pill-ok">已变</span></td>
+        </tr>
+        <tr>
+          <td class="fname">obj-02 · content.caption</td>
+          <td><span class="b">占位配图 · 待替换</span></td>
+          <td><span class="a">Day 22 改后值 · 由 PATCH 写入</span></td>
+          <td><span class="pill pill-ok">已变</span></td>
+        </tr>
+        <tr>
+          <td class="fname">obj-02 · name / shape / position</td>
+          <td class="same">摊开的笔记本 · book · [0.1, 0.55, -2]</td>
+          <td class="same">摊开的笔记本 · book · [0.1, 0.55, -2]</td>
+          <td><span class="pill pill-warn">未提即不动</span></td>
+        </tr>
+        <tr>
+          <td class="fname">obj-01 / 03 / 04 / 05</td>
+          <td class="same">4 条记录，各字段原值</td>
+          <td class="same">4 条记录，与改前逐字段一致</td>
+          <td><span class="pill pill-warn">未提即不动</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>三、这一步真正验证到的两件事</h2>
+  <div class="grid2">
+    <div class="mini">
+      <h3>① 改动确实落库了，不是"接口说改了"</h3>
+      <pre>PATCH  → HTTP 200，返回改后的整条记录
+GET    → 再查一次，值仍然是新的
+
+若只信 PATCH 的响应，就分不清
+"写进去了" 和 "写的时候 echo 回来了"。</pre>
+    </div>
+    <div class="mini">
+      <h3>② PATCH 是局部更新，不是整体替换</h3>
+      <pre>请求里没提到的字段（name / shape /
+position / sort_order）全部保持原值，
+另外 4 条记录一个字段都没动。
+
+换成 PUT 并漏写字段，这些位置就会
+被清空 —— 这正是选 PATCH 的理由。</pre>
+    </div>
+  </div>
+
+  <div class="foot">
+    对照数据来源：<code>evidence/day22-01-get-before.json</code>（改前）、
+    <code>day22-03-get-after-patch.json</code>（改后）、
+    <code>day22-02-patch-obj02.json</code>（PATCH 响应）。<br>
+    ⚠️ 演示结束后已将 <code>obj-02</code> 两个字段改回原值（<code>day22-18-patch-obj02-revert.json</code>，
+    HTTP 200），项目数据保持原样。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+{"ok":false,"error":{"code":"INVALID_FIELD_VALUE","message":"字段 color 必须是 #RRGGBB 形式，例如 #FFC97A。"}}

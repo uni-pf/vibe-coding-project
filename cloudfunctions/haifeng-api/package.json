@@ -1,7 +1,7 @@
 {
   "name": "haifeng-api",
   "version": "1.0.0",
-  "description": "《海风》物件清单与收藏接口（Day 17 读 / Day 18 写）",
+  "description": "《海风》物件清单与收藏接口（Day 17 读 / Day 18 写 / Day 22 改删）",
   "main": "index.js",
   "private": true,
   "dependencies": {

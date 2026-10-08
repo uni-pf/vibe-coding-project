@@ -1,0 +1,1 @@
+{"ok":false,"error":{"code":"METHOD_NOT_ALLOWED","message":"路径 /objects/obj-01 不支持 PUT 方法，修改请用 PATCH。"}}

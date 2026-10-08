@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Day 22 截图二 · DELETE 后 GET 不再返回</title>
+<style>
+  :root{
+    --ink:#0f172a; --sub:#5b6b7f; --line:#dbe4ee; --bg:#f4f8fc;
+    --brand:#185FA5; --brand-soft:#e8f1fa;
+    --gone:#c0392b; --ok:#1c7c54; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{width:1180px;margin:0 auto;padding:34px 40px 38px}
+  header{border-bottom:3px solid var(--brand);padding-bottom:16px;margin-bottom:22px}
+  .kicker{font-size:13px;letter-spacing:.16em;color:var(--brand);font-weight:700}
+  h1{margin:8px 0 6px;font-size:28px}
+  .sub{color:var(--sub);font-size:14px;line-height:1.7}
+  .url{font-family:Consolas,monospace;font-size:12.5px;color:#334155;background:#fff;
+       border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:inline-block;margin-top:8px}
+  h2{font-size:16px;margin:24px 0 10px;padding-left:10px;border-left:4px solid var(--brand)}
+  .steps{display:flex;gap:10px}
+  .step{flex:1;background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+  .step .t{font-size:12px;color:var(--sub);letter-spacing:.05em}
+  .step .c{font-family:Consolas,monospace;font-size:16px;font-weight:700;color:var(--brand);margin:4px 0 6px}
+  .step .d{font-size:12.5px;color:#475569;line-height:1.6}
+  .step.bad .c{color:var(--gone)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .panel .h{font-size:13px;font-weight:700;padding:9px 14px;border-bottom:1px solid var(--line);
+            display:flex;justify-content:space-between;align-items:center}
+  .panel .h span.n{font-weight:600;color:var(--sub)}
+  .panel.before .h{background:#eef3f9;color:#334155}
+  .panel.after  .h{background:#fdeeea;color:var(--gone)}
+  ul{list-style:none;margin:0;padding:8px 14px 12px}
+  li{font-family:Consolas,monospace;font-size:13px;padding:6px 8px;border-radius:6px;margin:5px 0;color:#334155}
+  li.on{background:#eef6f1}
+  li.off{background:#fdeeea;color:var(--gone);font-weight:700}
+  li.mut{background:#f1f5f9;color:#94a3b8}
+  li .tag{float:right;font-size:11px;font-weight:700;font-family:"Segoe UI",system-ui;letter-spacing:.04em}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff;
+        border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{background:var(--brand-soft);color:var(--brand);font-size:12.5px;letter-spacing:.04em}
+  tr:last-child td{border-bottom:none}
+  code{font-family:Consolas,monospace;font-size:12.5px;background:#f1f5f9;padding:1px 6px;border-radius:4px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px}
+  .pill-ok{background:#e5f5ec;color:var(--ok)}
+  .pill-bad{background:#fdeeea;color:var(--gone)}
+  .foot{margin-top:20px;font-size:12.5px;color:var(--sub);line-height:1.8}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="kicker">DAY 22 · 板块 ② 删（DELETE）· 第 4 周</div>
+    <h1>删除后，GET 里真的不再返回它</h1>
+    <div class="sub">
+      删除对象 <code>obj-05</code>（朝海的窗（预告））。用"条数"和"逐条清单"两处同时证明它消失了。<br>
+      下面每一帧都是真实接口的返回原文，不是示意。
+    </div>
+    <div class="url">https://example-d3gz7b0wea9b8bb2e-1500064837.ap-shanghai.app.tcloudbase.com/api</div>
+  </header>
+
+  <h2>一、两次 DELETE：一次被拦、一次通过</h2>
+  <div class="steps">
+    <div class="step bad">
+      <div class="t">不带确认</div>
+      <div class="c">HTTP 400</div>
+      <div class="d"><code>{"confirm": false}</code><br>
+        <code>CONFIRM_REQUIRED</code><br>「删除需要确认：请在请求体里传 {"confirm": true}。」</div>
+    </div>
+    <div class="step">
+      <div class="t">带确认</div>
+      <div class="c">HTTP 200</div>
+      <div class="d"><code>{"confirm": true}</code><br>
+        返回 <code>deleted:true · softDeleted:true</code><br>
+        <code>deletedAt: 2026-10-08T23:02:46+08:00</code></div>
+    </div>
+    <div class="step bad">
+      <div class="t">同一对象再删一次</div>
+      <div class="c">HTTP 404</div>
+      <div class="d">「物件不存在或已删除：obj-05。」<br>第二次什么也没发生，就该报"要删的已经不在"。</div>
+    </div>
+  </div>
+
+  <h2>二、GET /api/objects 的逐条清单：5 条 → 4 条</h2>
+  <div class="two">
+    <div class="panel before">
+      <div class="h"><span>删之前</span><span class="n">data.length = 5</span></div>
+      <ul>
+        <li class="on">obj-01 一盏没关的台灯</li>
+        <li class="on">obj-02 摊开的笔记本</li>
+        <li class="on">obj-03 靠在墙边的旧唱片</li>
+        <li class="on">obj-04 一件没扔的旧家具（预告）</li>
+        <li class="on">obj-05 朝海的窗（预告）</li>
+      </ul>
+    </div>
+    <div class="panel after">
+      <div class="h"><span>删之后（同一条 GET，未加任何参数）</span><span class="n">data.length = 4</span></div>
+      <ul>
+        <li class="on">obj-01 一盏没关的台灯</li>
+        <li class="on">obj-02 摊开的笔记本</li>
+        <li class="on">obj-03 靠在墙边的旧唱片</li>
+        <li class="on">obj-04 一件没扔的旧家具（预告）</li>
+        <li class="off">obj-05 已消失<span class="tag">NOT RETURNED</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>三、它只是被"标记"了，不是没了（软删除的证据）</h2>
+  <div class="two">
+    <div class="panel before">
+      <div class="h"><span>GET /api/objects?include_deleted=1</span><span class="n">data.length = 5</span></div>
+      <ul>
+        <li class="mut">obj-01 … obj-04 <span class="tag">isDeleted: false</span></li>
+        <li class="off" style="background:#fdf6ee;color:#b45309">obj-05 朝海的窗（预告）<span class="tag">isDeleted: TRUE</span></li>
+      </ul>
+      <div style="padding:0 14px 10px;font-size:12.5px;color:#64748b;line-height:1.6">
+        <code>deleted_at = 2026-10-08T23:02:46.622+08:00</code><br>行还在库里，只是默认查询跳过了它。
+      </div>
+    </div>
+    <div class="panel before">
+      <div class="h"><span>PATCH {"is_deleted": false} 找回</span><span class="n">→ GET 又回到 5 条</span></div>
+      <ul>
+        <li class="on">obj-05 朝海的窗（预告）
+          <span class="tag" style="color:#1c7c54">isDeleted: false · deletedAt: null</span></li>
+      </ul>
+      <div style="padding:0 14px 10px;font-size:12.5px;color:#64748b;line-height:1.6">
+        删错了能原样翻回来 —— 这是硬删除给不了的能力，也是本次"余力加练"要求的结果。
+      </div>
+    </div>
+  </div>
+
+  <h2>四、为什么"删"要加确认（今天的核心问题）</h2>
+  <table>
+    <thead><tr><th style="width:90px">操作</th><th>出错后果</th><th style="width:170px">能否自愈</th><th style="width:150px">确认在哪一层</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET</code></td><td>看到错的数据</td><td><span class="pill pill-ok">能，重查即可</span></td><td>—</td></tr>
+      <tr><td><code>POST</code></td><td>多一条记录</td><td><span class="pill pill-ok">能，删掉即可</span></td><td>唯一约束</td></tr>
+      <tr><td><code>PATCH</code></td><td>某个字段值写错</td><td><span class="pill pill-ok">能，再改一次</span></td><td>—</td></tr>
+      <tr><td><code>DELETE</code></td><td><b>这一条从列表里消失</b></td><td><span class="pill pill-bad">硬删除时不能</span></td><td><b>接口层 confirm:true<br>存储层 is_deleted 软删除<br>读取层 GET 过滤</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">
+    数据来源：<code>day22-01-get-before.json</code>（5 条）、<code>day22-04-delete-no-confirm.json</code>（400）、
+    <code>day22-05-delete-obj05.json</code>（200）、<code>day22-06-get-after-delete.json</code>（4 条）、
+    <code>day22-07-delete-obj05-again.json</code>（404）、<code>day22-08-get-include-deleted.json</code>（isDeleted: true）、
+    <code>day22-10-get-after-restore.json</code>（找回后 5 条）。<br>
+    ⚠️ 演示结束后 <code>obj-05</code> 已找回，库里 5 条物件完整，项目数据未被破坏。
+  </div>
+
+</div>
+</body>
+</html>

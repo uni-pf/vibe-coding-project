@@ -1,0 +1,27 @@
+==== 阶段 A · 查（GET）改前基线 ====
+day22-01-get-before.json                 GET     /objects                               -> HTTP 200
+==== 阶段 B · 改（PATCH）====
+day22-02-patch-obj02.json                PATCH   /objects/obj-02                        -> HTTP 200
+day22-03-get-after-patch.json            GET     /objects                               -> HTTP 200
+==== 阶段 C · 删（DELETE，软删除）====
+day22-04-delete-no-confirm.json          DELETE  /objects/obj-05                        -> HTTP 400
+day22-05-delete-obj05.json               DELETE  /objects/obj-05                        -> HTTP 200
+day22-06-get-after-delete.json           GET     /objects                               -> HTTP 200
+day22-07-delete-obj05-again.json         DELETE  /objects/obj-05                        -> HTTP 404
+day22-08-get-include-deleted.json        GET     /objects?include_deleted=1             -> HTTP 200
+==== 阶段 D · 找回（PATCH is_deleted=false）====
+day22-09-patch-restore-obj05.json        PATCH   /objects/obj-05                        -> HTTP 200
+day22-10-get-after-restore.json          GET     /objects                               -> HTTP 200
+==== 阶段 E · 错误用例 ====
+day22-11-err-patch-empty.json            PATCH   /objects/obj-01                        -> HTTP 400
+day22-12-err-patch-unknown.json          PATCH   /objects/obj-01                        -> HTTP 400
+day22-13-err-patch-badcolor.json         PATCH   /objects/obj-01                        -> HTTP 400
+day22-14-err-patch-notfound.json         PATCH   /objects/obj-99                        -> HTTP 404
+day22-15-err-delete-notfound.json        DELETE  /objects/obj-99                        -> HTTP 404
+day22-16-err-put-405.json                PUT     /objects/obj-01                        -> HTTP 405
+day22-17-err-route-404.json              GET     /nope                                  -> HTTP 404
+==== 阶段 F · 复原 + 增（POST）回归 ====
+day22-18-patch-obj02-revert.json         PATCH   /objects/obj-02                        -> HTTP 200
+day22-19-post-dup-favorite.json          POST    /favorites                             -> HTTP 409
+day22-20-get-final.json                  GET     /objects                               -> HTTP 200
+day22-21-root-routes.json                GET                                            -> HTTP 200

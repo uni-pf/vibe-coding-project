@@ -2,6 +2,7 @@
 -- 《海风》· 画中的一生 —— 数据库表结构
 -- 归属：Day 16 · 板块① 数据模型设计
 --       Day 17 修订 —— 按 CloudBase PG 执行限制改写，并补上权限层
+--       Day 22 修订 —— 新增 objects.is_deleted / deleted_at（软删除）与 anon 的 UPDATE 权限
 -- 目标库：CloudBase 关系型数据库（PostgreSQL）
 --
 -- ----------------------------------------------------------------------------
@@ -94,6 +95,10 @@ CREATE TABLE IF NOT EXISTS chapters (
 --   memory_body   那段回忆的正文。用 TEXT：正文长度不可预估。
 --   memory_caption 配图的说明文字。
 --   sort_order    同一阶段内的展示顺序。
+--   is_deleted    【Day 22 新增】软删除标记。true = 该物件已"删除"。
+--                 不执行 SQL DELETE，只翻这个标记：稿子写错、误点删除都能翻回来。
+--                 所有正常查询必须带 is_deleted = false，否则软删除等于没做。
+--   deleted_at    【Day 22 新增】标记删除的时间，未删除为 NULL。删错了找回来时能知道是什么时候删的。
 --   _openid       【CloudBase 硬性要求】同 chapters。
 CREATE TABLE IF NOT EXISTS objects (
   id              SERIAL          PRIMARY KEY,
@@ -111,6 +116,8 @@ CREATE TABLE IF NOT EXISTS objects (
   memory_body     TEXT,
   memory_caption  VARCHAR(128),
   sort_order      SMALLINT        NOT NULL DEFAULT 0,
+  is_deleted      BOOLEAN         NOT NULL DEFAULT FALSE,
+  deleted_at      TIMESTAMPTZ,
   _openid         VARCHAR(64)     NOT NULL DEFAULT '',
   created_at      TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -165,6 +172,12 @@ CREATE TABLE IF NOT EXISTS favorites (
 CREATE INDEX IF NOT EXISTS idx_objects_chapter_id ON objects (chapter_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_openid   ON favorites (_openid);
 
+-- 【Day 22 说明】不给 is_deleted 单独建索引：本表只有个位数行，
+-- 全表扫比走索引还快；而且正常查询恒带 is_deleted = false，
+-- 真正的优化方向是「部分索引」，要等数据量上来再说。
+-- ⚠️ 本段是**重建整套表**的写法。已建好的库不要重跑本段，
+--    补列走 cloudbase/migrations/20261008230000_add_objects_soft_delete.sql。
+
 
 -- ============================================================================
 -- 第 2 段 · 权限第一层：GRANT（表级 + 序列级）
@@ -188,6 +201,12 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 
 GRANT SELECT ON TABLE public.chapters TO anon, authenticated;
 GRANT SELECT ON TABLE public.objects  TO anon, authenticated;
+
+-- 【Day 22 新增】PATCH / DELETE 要写 objects 表，需要 UPDATE。
+-- 注意这里是**无登录场景下的妥协**：接口以匿名身份（anon）访问数据库，
+-- 所以「能改作品内容」这个权力实际落在了 anon 身上。
+-- 上线用户系统后应收回，只留 service_role 或 authenticated + 更细的策略。
+GRANT UPDATE ON TABLE public.objects  TO anon, authenticated;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.favorites TO authenticated;
 
@@ -224,6 +243,16 @@ CREATE POLICY p_chapters_public_read ON public.chapters
 DROP POLICY IF EXISTS p_objects_public_read ON public.objects;
 CREATE POLICY p_objects_public_read ON public.objects
   FOR SELECT USING (true);
+
+-- 【Day 22 新增】objects 的写策略。
+-- ⚠️ 这一步漏掉的症状特别隐蔽：RLS 开着、但没有任何 UPDATE 策略时，
+--    UPDATE 会被「默认拒绝」，报的是 permission denied for table objects ——
+--    看着像没授权，其实是策略缺位，光查 role_table_grants 查不出来。
+DROP POLICY IF EXISTS p_objects_anon_write ON public.objects;
+CREATE POLICY p_objects_anon_write ON public.objects
+  FOR UPDATE TO anon
+  USING     (true)
+  WITH CHECK (true);
 
 -- 收藏：每个人只能读 / 写自己名下的行
 -- USING 管「能看见哪些行」，WITH CHECK 管「能写成什么行」，两个都要写。
