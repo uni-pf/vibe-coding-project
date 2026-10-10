@@ -1,0 +1,27 @@
+[data] 接口读取失败，降级到本地示例数据： 网络连接失败，暂时无法访问接口，请检查网络后重试。 TypeError: Failed to fetch
+    at fake (file:///d:/vibe-coding-project/evidence/day23-error-cases.mjs:16:32)
+    at fetchFromApi (file:///d:/vibe-coding-project/src/data/api.js:66:21)
+    at loadObjects (file:///d:/vibe-coding-project/src/data/api.js:94:25)
+    at file:///d:/vibe-coding-project/evidence/day23-error-cases.mjs:37:19
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+PASS  ① 网络层失败（断网 / DNS 失败，浏览器原文 Failed to fetch）
+      message → 网络连接失败，暂时无法访问接口，请检查网络后重试。 （英文原文已留在 error.cause）
+      source  → local
+[data] 接口读取失败，降级到本地示例数据： 接口返回 HTTP 500 Error: 接口返回 HTTP 500
+    at fetchFromApi (file:///d:/vibe-coding-project/src/data/api.js:70:22)
+    at async loadObjects (file:///d:/vibe-coding-project/src/data/api.js:94:19)
+    at async file:///d:/vibe-coding-project/evidence/day23-error-cases.mjs:37:13
+PASS  ② 接口返回 HTTP 500（服务端错误）
+      message → 接口返回 HTTP 500 （英文原文已留在 error.cause）
+      source  → local
+[data] 接口读取失败，降级到本地示例数据： 接口返回的形状与 api-contract.md 不一致 Error: 接口返回的形状与 api-contract.md 不一致
+    at fetchFromApi (file:///d:/vibe-coding-project/src/data/api.js:78:11)
+    at async loadObjects (file:///d:/vibe-coding-project/src/data/api.js:94:19)
+    at async file:///d:/vibe-coding-project/evidence/day23-error-cases.mjs:37:13
+PASS  ③ 返回 200 但形状与契约不符（ok:false）
+      message → 接口返回的形状与 api-contract.md 不一致 （英文原文已留在 error.cause）
+      source  → local
+
+3/3 类错误提示均为中文

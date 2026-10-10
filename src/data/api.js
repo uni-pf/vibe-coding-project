@@ -94,7 +94,19 @@ export async function loadObjects() {
     const items = await fetchFromApi()
     return { items, source: 'api', error: null }
   } catch (error) {
-    console.warn('[data] 接口读取失败，降级到本地示例数据：', error)
-    return { items: LOCAL_FALLBACK, source: 'local', error }
+    // Day 23 · 三类错误的 message 统一成中文（错误码总表之外的第四类兜底）：
+    //   ① HTTP 状态错  → fetchFromApi 抛「接口返回 HTTP xxx」（本就中文）
+    //   ② 形状不一致   → fetchFromApi 抛「接口返回的形状…」（本就中文）
+    //   ③ 网络层失败   → fetch 直接 reject，浏览器原文是英文 "Failed to fetch"，
+    //                    原样抛出去会被 catalog 的错误文案拼成「数据读取失败：Failed to fetch」。
+    // 处理：message 统一换中文；英文原文挂进 error.cause，只进控制台、不进页面。
+    const isNetworkError = error instanceof TypeError
+    const friendly = isNetworkError
+      ? '网络连接失败，暂时无法访问接口，请检查网络后重试。'
+      : String(error?.message || '未知错误')
+    console.warn('[data] 接口读取失败，降级到本地示例数据：', friendly, error)
+    const wrapped = new Error(friendly)
+    wrapped.cause = error
+    return { items: LOCAL_FALLBACK, source: 'local', error: wrapped }
   }
 }

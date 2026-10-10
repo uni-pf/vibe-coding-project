@@ -1,0 +1,12 @@
+== 1. POST /api/favorites 非法 JSON
+{"ok":false,"error":{"code":"INVALID_JSON","message":"请求体不是合法的 JSON，请检查后再提交。"}}
+HTTP:400
+== 2. DELETE /api/objects/obj-01 不带 confirm
+{"ok":false,"error":{"code":"CONFIRM_REQUIRED","message":"删除需要确认：请在请求体里传 {\"confirm\": true}。"}}
+HTTP:400
+== 3. GET 不存在的路径
+{"ok":false,"error":{"code":"ROUTE_NOT_FOUND","message":"接口不存在：/no-such-path。"}}
+HTTP:404
+== 4. PATCH 未知字段
+{"ok":false,"error":{"code":"UNKNOWN_FIELD","message":"不支持修改字段：hacker_field。"}}
+HTTP:400

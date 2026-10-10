@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Day 23 · 截图2 · 三类错误提示统一</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f4f7fb; color: #1c2b3a; margin: 0; padding: 28px 36px; }
+  h1 { font-size: 20px; color: #185FA5; border-bottom: 3px solid #185FA5; padding-bottom: 8px; }
+  h2 { font-size: 15px; color: #185FA5; margin: 18px 0 6px; }
+  pre { background: #0d2137; color: #cfe3f5; font-size: 12.5px; line-height: 1.6; padding: 12px 14px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; margin: 6px 0; }
+  .pass { color: #0a7d34; font-weight: 700; }
+  .meta { color: #5a6b7d; font-size: 12px; }
+  .zh { color: #ffd479; }
+  table { border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+  td, th { border: 1px solid #b9c8d8; padding: 6px 10px; text-align: left; }
+  th { background: #e3edf7; }
+</style>
+</head>
+<body>
+<h1>Day 23 · 板块③ 三类错误提示统一（前端实测 3/3 PASS + 线上接口复核）</h1>
+<p class="meta">实测脚本：node evidence/day23-error-cases.mjs（monkeypatch global.fetch 注入三类故障）· 输出原文：evidence/day23-error-cases.out.txt</p>
+
+<h2>前端适配层 · 三类故障的对外 message（loadObjects 实跑）</h2>
+<pre><span class="pass">PASS</span>  ① 网络层失败（浏览器原文 Failed to fetch）
+      message → <span class="zh">网络连接失败，暂时无法访问接口，请检查网络后重试。</span>（英文原文已留在 error.cause）
+      source  → local
+<span class="pass">PASS</span>  ② 接口返回 HTTP 500（服务端错误）
+      message → <span class="zh">接口返回 HTTP 500</span>
+      source  → local
+<span class="pass">PASS</span>  ③ 返回 200 但形状与契约不符（ok:false）
+      message → <span class="zh">接口返回的形状与 api-contract.md 不一致</span>
+      source  → local
+
+3/3 类错误提示均为中文   （exit=0）</pre>
+
+<h2>线上接口复核 · 服务端错误同样全中文（curl 实测 2026-10-10）</h2>
+<table>
+  <tr><th>故障注入</th><th>HTTP</th><th>error.code</th><th>error.message（原文摘录）</th></tr>
+  <tr><td>POST 非法 JSON</td><td>400</td><td>INVALID_JSON</td><td>请求体不是合法的 JSON，请检查后再提交。</td></tr>
+  <tr><td>DELETE 不带 confirm</td><td>400</td><td>CONFIRM_REQUIRED</td><td>删除需要确认：请在请求体里传 {"confirm": true}。</td></tr>
+  <tr><td>GET 不存在的路径</td><td>404</td><td>ROUTE_NOT_FOUND</td><td>接口不存在：/no-such-path。</td></tr>
+  <tr><td>PATCH 白名单外字段</td><td>400</td><td>UNKNOWN_FIELD</td><td>不支持修改字段：hacker_field。</td></tr>
+</table>
+<p class="meta">原始响应：evidence/day23-api-chinese-errors.txt · 本次唯一代码改动：src/data/api.js（网络层错误 message 统一中文，英文原文进 error.cause）</p>
+</body>
+</html>
