@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Day 24 · 截图1 · 复现与定位</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f4f7fb; color: #1c2b3a; margin: 0; padding: 28px 36px; }
+  h1 { font-size: 20px; color: #185FA5; border-bottom: 3px solid #185FA5; padding-bottom: 8px; }
+  h2 { font-size: 15px; color: #185FA5; margin: 18px 0 6px; }
+  pre { background: #0d2137; color: #cfe3f5; font-size: 12.5px; line-height: 1.6; padding: 12px 14px; border-radius: 8px; white-space: pre-wrap; margin: 6px 0; }
+  .err { color: #ff9b9b; font-weight: 700; }
+  .ok { color: #7fe3a8; }
+  .meta { color: #5a6b7d; font-size: 12px; }
+  table { border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+  td, th { border: 1px solid #b9c8d8; padding: 5px 10px; text-align: left; }
+  th { background: #e3edf7; }
+</style>
+</head>
+<body>
+<h1>Day 24 · 板块①② Bug 复现与定位（favicon 404）</h1>
+<p class="meta">环境：vite preview（localhost:4173，dist 为 Day 22 构建产物）+ 真实 Chrome 无头（CDP 驱动）· 2026-10-10</p>
+
+<h2>① 复现 · F12 控制台报错原文（CDP Log.entryAdded 抓取）</h2>
+<pre class="err">[log.error] Failed to load resource: the server responded with a status of 404 (Not Found)</pre>
+<p class="meta">证据原文：evidence/day24-1-before-console.txt · 页面截图：evidence/day24-1-before-page.png</p>
+
+<h2>① 复现 · 网络请求清单（CDP Network 域，确认 404 的就是 favicon）</h2>
+<pre>200  http://localhost:4173/catalog.html
+200  http://localhost:4173/assets/catalog-BtIvtYV8.js
+200  http://localhost:4173/assets/modulepreload-polyfill-B5Qt9EMX.js
+200  http://localhost:4173/assets/catalog-e4Hx7L57.css
+<span class="err">404  http://localhost:4173/favicon.ico      ← 唯一失败项</span>
+200  https://…tcloudbase.com/api/objects    （接口正常返回 5 条）</pre>
+<p class="meta">证据原文：evidence/day24-net-trace.txt</p>
+
+<h2>② 定位 · 排除法（怎么锁定的）</h2>
+<table>
+  <tr><th>候选原因</th><th>排查动作</th><th>结论</th></tr>
+  <tr><td>接口挂了</td><td>网络清单看 /api/objects</td><td>200，5 条数据正常返回 → 排除</td></tr>
+  <tr><td>JS 异常</td><td>控制台全量收集</td><td>仅 1 条资源 404，无 JS 异常 → 排除</td></tr>
+  <tr><td>静态资源挂了</td><td>js / css 逐一核对</td><td>全部 200 → 排除</td></tr>
+  <tr><td><b>缺图标声明</b></td><td>查 HTML 与 public/</td><td><b>index.html / catalog.html 均无 &lt;link rel="icon"&gt;，public/ 无任何图标文件</b></td></tr>
+</table>
+<p class="note" style="font-size:13px;margin-top:8px">根因：页面没有声明图标时，Chrome 会按规范行为自动请求 /favicon.ico；本项目没有这个文件，preview 服务器返回 404，控制台必现一条红色报错。该问题在 Day 21 周验收（W11）已记录并「记入下周」，正是今天要修的 Bug。</p>
+</body>
+</html>

@@ -1,0 +1,7 @@
+200  http://localhost:4173/
+200  http://localhost:4173/assets/modulepreload-polyfill-B5Qt9EMX.js
+200  http://localhost:4173/assets/main-B10Rhraz.css
+200  http://localhost:4173/assets/main-DMyJyJTM.js
+200  http://localhost:4173/assets/sea-wind-backdrop-DXPaB4Ow.png
+200  http://localhost:4173/assets/sea-wind-gauze-DP0zyAlA.png
+200  http://localhost:4173/favicon.svg

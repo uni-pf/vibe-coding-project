@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Day 24 · 截图2 · 修复后正常运行</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f4f7fb; color: #1c2b3a; margin: 0; padding: 28px 36px; }
+  h1 { font-size: 20px; color: #185FA5; border-bottom: 3px solid #185FA5; padding-bottom: 8px; }
+  h2 { font-size: 15px; color: #185FA5; margin: 18px 0 6px; }
+  pre { background: #0d2137; color: #cfe3f5; font-size: 12.5px; line-height: 1.6; padding: 12px 14px; border-radius: 8px; white-space: pre-wrap; margin: 6px 0; }
+  .ok { color: #7fe3a8; }
+  .big { font-size: 24px; font-weight: 700; color: #0a7d34; background: #e6f6ec; border: 2px solid #0a7d34; border-radius: 8px; padding: 10px 16px; display: inline-block; margin: 6px 0; }
+  .meta { color: #5a6b7d; font-size: 12px; }
+  .fix { background: #fff; border: 1px solid #b9c8d8; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin: 8px 0; }
+  code { background: #e3edf7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>Day 24 · 板块③④ 修复与验证</h1>
+
+<h2>③ 修复内容（3 个文件）</h2>
+<div class="fix">
+  1. 新增 <code>public/favicon.svg</code> —— 海风主题站点图标（深蓝圆底 + 三道浪）<br>
+  2. <code>index.html</code> &nbsp;head 里补 <code>&lt;link rel="icon" type="image/svg+xml" href="/favicon.svg"&gt;</code><br>
+  3. <code>catalog.html</code> 同上<br>
+  修复后 <code>npm run build</code> 重新构建（dist 已更新）
+</div>
+
+<h2>④ 验证 · 控制台报错（修复前 1 条 → 修复后 0 条）</h2>
+<pre class="ok">CONSOLE-LINES -> 0
+（catalog.html 加载完成，控制台无任何报错与警告）</pre>
+<p class="meta">证据原文：evidence/day24-2-after-console.txt · 页面截图：evidence/day24-2-after-page.png（页面正常渲染 5 件物件，数据来源徽标为 CloudBase 数据库）</p>
+
+<h2>④ 验证 · 修复后网络清单（两页全部 200，favicon 由 404 变 200）</h2>
+<pre>catalog.html：
+200  http://localhost:4173/catalog.html
+200  …/assets/modulepreload-polyfill-B5Qt9EMX.js
+200  …/assets/catalog-e4Hx7L57.css
+200  …/assets/catalog-ButiQ2x8.js
+<span class="ok">200  http://localhost:4173/favicon.svg     ← 修复前是 404 favicon.ico</span>
+200  https://…tcloudbase.com/api/objects
+
+index.html（3D 房间页）：
+200  /  ·  main.js · 两份 css · 两张大图 · <span class="ok">favicon.svg 200</span>（全 200）</pre>
+<p class="meta">证据原文：evidence/day24-net-trace-after.txt / day24-net-trace-after-index.txt</p>
+
+<div class="big">✓ 复现 → 定位 → 修复 → 验证 四步证据齐全，控制台 0 报错</div>
+</body>
+</html>

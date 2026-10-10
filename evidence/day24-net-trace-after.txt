@@ -1,0 +1,6 @@
+200  http://localhost:4173/catalog.html
+200  http://localhost:4173/assets/modulepreload-polyfill-B5Qt9EMX.js
+200  http://localhost:4173/assets/catalog-e4Hx7L57.css
+200  http://localhost:4173/assets/catalog-ButiQ2x8.js
+200  http://localhost:4173/favicon.svg
+200  https://example-d3gz7b0wea9b8bb2e-1500064837.ap-shanghai.app.tcloudbase.com/api/objects
