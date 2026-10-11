@@ -84,3 +84,36 @@ Can not find skill: "filter-interaction-check"
 
 SKILL.md 仍在项目内，是唯一一份正文；**没有**另存 `frontend-guidelines.md`，
 避免同一套标准出现两个文件、日后改一处漏一处。
+
+---
+
+## 2026-10-11 · pre-release-check 第 1 次调用（Day 25）
+
+- **调用对象**：仓库工作区 + `cloudfunctions/haifeng-api/index.js`（验证 Skill 本身）
+- **调用方式**：手动加载 SKILL.md 逐条执行（新会话内新建的 Skill 不被工具识别，同 Day 12 降级路径）
+- **结论**：**未通过（1 项）→ 修复后通过** —— 本次是验证性调用：先在干净代码上跑出 4/4 通过（证明不虚报未通过），再故意注入一处问题，验证 Skill 能查出来
+
+### 两轮结果
+
+| 轮次 | ① 密钥泄露 | ② 契约一致性 | ③ 调试残留 | ④ 敏感文件跟踪 |
+| --- | --- | --- | --- | --- |
+| 基线（干净代码） | 通过 | 通过 | 通过 | 通过 |
+| 注入问题后 | 通过 | 通过 | **未通过**（index.js:669） | 通过 |
+
+### 故意注入的问题（Day 25 验证核心）
+
+在 `GET /` 根路由响应对象里加 `debugEnv: process.env,`（第 669 行）。
+Skill 用 grep 模式 `return (event|context|process\.env)|process\.env\s*,\s*$|...` 命中该行，
+报告输出文件+行号+修复建议。**答案：故意弄坏的是「调试残留」这一项。**
+
+### 证据
+
+- 报告页：`evidence/day25-skill-report.html`
+- 截图：`evidence/day25-skill-report.png`（未通过项在表格第 3 行标红，含行号与修复建议）
+- 注入已还原：`git diff` 为空，检查项 3 复跑无命中；备份在 `D:/WorkBuddyEnv/temp/haifeng-api.index.js.orig`
+
+### 实跑中发现的判定细节（供下次参考）
+
+- 契约一致性要把「接口章节声明」（`## N. \`METHOD /path\``）与「§7 清单原文映射表」区分开：
+  §7 里的 `GET /api/hot` 是历史映射说明，不是缺失接口，不能判未通过
+- 路由集合对比用「契约章节 grep」与「代码路由清单 grep」各取一侧再 sort 比对，5 == 5

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>发布前检查结果 · 2026-10-11</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 40px;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #F4F7FA; color: #1B2A3A;
+  }
+  .card { max-width: 1000px; margin: 0 auto; background: #fff;
+          border-radius: 10px; padding: 32px 36px;
+          box-shadow: 0 2px 16px rgba(24,95,165,.10); }
+  h1 { margin: 0 0 4px; font-size: 22px; color: #185FA5; letter-spacing: .5px; }
+  .sub { color: #5B6B7C; font-size: 13px; margin-bottom: 24px; }
+  .sub code { background: #EEF3F8; padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .banner { border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;
+            background: #FFF4F2; border: 1px solid #F5C4BC; border-left: 4px solid #D94A3D; }
+  .banner .t { font-weight: 700; color: #B03024; font-size: 15px; }
+  .banner .d { color: #7A4A42; font-size: 13px; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 12px; background: #185FA5; color: #fff;
+       font-weight: 600; font-size: 13px; }
+  td { padding: 11px 12px; border-bottom: 1px solid #E3EBF3; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .pass { color: #1E7A4C; font-weight: 700; }
+  .fail { color: #C0392B; font-weight: 700; }
+  .ev { font-family: Consolas, monospace; font-size: 12px; color: #5B6B7C; }
+  .ev b { color: #C0392B; }
+  .num { color: #185FA5; font-weight: 700; }
+  h2 { font-size: 15px; color: #185FA5; margin: 28px 0 10px;
+       padding-bottom: 6px; border-bottom: 2px solid #E3EBF3; }
+  .detail { background: #FFF4F2; border: 1px solid #F5C4BC; border-radius: 8px;
+            padding: 16px 20px; font-size: 13.5px; }
+  .detail .row { margin-bottom: 8px; }
+  .detail .k { display: inline-block; width: 76px; color: #B03024; font-weight: 700; }
+  .detail code { background: #fff; border: 1px solid #F5C4BC; padding: 1px 6px;
+                 border-radius: 3px; font-family: Consolas, monospace; font-size: 12.5px; }
+  .concl { margin-top: 24px; padding: 14px 18px; border-radius: 8px;
+           background: #FDF0EE; border-left: 4px solid #D94A3D;
+           font-size: 14px; font-weight: 700; color: #B03024; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>发布前检查结果</h1>
+  <div class="sub">
+    检查日期 2026-10-11 · Skill <code>pre-release-check</code> ·
+    对象 <code>cloudfunctions/haifeng-api/index.js</code> 及仓库工作区
+  </div>
+
+  <div class="banner">
+    <div class="t">结论：不建议发布 —— 存在 1 项未通过</div>
+    <div class="d">检查项 3「调试残留」发现云函数向响应体回显 <b>process.env</b>，可能随响应泄露服务端环境变量（含网关注入的临时凭据）。</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th style="width:36px">#</th><th style="width:132px">检查项</th><th style="width:96px">结论</th><th>证据</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="num">1</td>
+        <td>密钥泄露</td>
+        <td class="pass">通过</td>
+        <td class="ev">赋值模式 + 字面量模式两次扫描均为空；<code>.env</code> 未被 git 跟踪</td>
+      </tr>
+      <tr>
+        <td class="num">2</td>
+        <td>契约一致性</td>
+        <td class="pass">通过</td>
+        <td class="ev">契约 5 条路由 == 代码 5 条路由：GET /objects、GET /favorites、POST /favorites、PATCH /objects/:code、DELETE /objects/:code</td>
+      </tr>
+      <tr>
+        <td class="num">3</td>
+        <td>调试残留</td>
+        <td class="fail">未通过</td>
+        <td class="ev">index.js <b>第 669 行</b>：<code>debugEnv: process.env,</code> —— 整体回显服务端环境变量</td>
+      </tr>
+      <tr>
+        <td class="num">4</td>
+        <td>敏感文件跟踪</td>
+        <td class="pass">通过</td>
+        <td class="ev">git ls-files 无 .env/.pem/.key/credential；<code>git check-ignore -v .env</code> → <code>.gitignore:2</code> 规则实测生效</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>未通过项明细</h2>
+  <div class="detail">
+    <div class="row"><span class="k">在哪</span><code>cloudfunctions/haifeng-api/index.js</code> 第 669 行，<code>GET /</code> 根路由的响应对象里</div>
+    <div class="row"><span class="k">是什么</span><code>debugEnv: process.env,</code> —— 把整个环境变量对象塞进响应体</div>
+    <div class="row"><span class="k">为什么算问题</span>CloudBase 网关会在请求头注入临时凭据；云函数实例的 env 里包含 <code>TCB_ENV</code> / <code>SCF_NAMESPACE</code> 等内部标识。整体回显等于把服务端内部结构对外公开 —— 而页面功能完全正常，只有去看响应体的人才会发现。</div>
+    <div class="row"><span class="k">怎么修</span>删掉该字段。若确实需要暴露环境信息，只回显自己挑选过的白名单字段（如 <code>{ env: ENV_ID }</code>），不回显整个对象。</div>
+  </div>
+
+  <div class="concl">可以发布？ 否 —— 修掉第 3 项后方可发布。</div>
+</div>
+</body>
+</html>
