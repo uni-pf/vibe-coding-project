@@ -75,32 +75,40 @@ body {
   color: var(--ink-soft);
 }
 
-/* ── 数据来源标识（Day 17）───────────────────────────────
-   视觉上是"徽标"而不是正文：小字号 + 浅底 + 圆角。
-   为什么不做成醒目的警告色：
-   接口正常时它是日常信息（说明数据是真的），不该每天红着；
-   只有降级到本地示例数据时，[data-source="local"] 才把它染成警示色 ——
-   颜色在这里承担"是否可信"的语义，所以两态必须明显不同。 */
+/* ── 数据来源标识（Day 17 建立样式 · Day 27 按第三方反馈修正）───
+   Day 27 反馈：两位试用人都把这行当成可点的东西 ——
+   带底色 + 圆角胶囊 + 看起来像按钮，第一屏就误点它。
+   但它是纯文字信息，点了本来就没有任何响应。
+
+   修正方式（只去"像按钮"的三个特征，不改信息本身、不改降级语义）：
+   ① 去掉胶囊底色与圆角 —— 圆角胶囊是页面上"按钮"的固定形状；
+   ② 边框改成下划虚线 —— 虚线下划线读作"注释/脚注"，不读作"可点"；
+   ③ 字色贴近正文灰（仍保两级对比：api 蓝灰、local 警示红），
+      不再和正文抢第一屏注意力 —— 它是给需要的人看的注脚，不是入口。
+   ⚠️ 刻意保留 [data-source='local'] 的红色警示：
+   Day 17 立这条的原因（降级时必须显眼、不许静默吞错）没有变，
+   变的只是"长得像按钮"这一层皮肤。 */
 .cat-source {
   display: inline-block;
   margin: 12px 0 0;
-  padding: 3px 10px;
+  padding: 1px 0;
   font-size: 12px;
   line-height: 1.6;
-  border-radius: 999px;
-  background: var(--brand-soft);
-  color: var(--brand-deep);
-  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  border: none;
+  border-bottom: 1px dashed var(--line);
 }
 
 .cat-source[data-source='local'] {
-  background: #FDF2F0;
+  background: transparent;
   color: var(--danger);
-  border-color: #EFC9C4;
+  border-bottom: 1px dashed #EFC9C4;
 }
 
 .cat-source[data-source='loading'] {
-  background: var(--bg);
+  background: transparent;
   color: var(--ink-soft);
 }
 

@@ -44,3 +44,10 @@ art/*.blend1
 art/sea-wind-oblique-check.png
 art/sea-wind-straight-check.png
 art/sea-wind-still-preview.png
+
+# B 站转写工具的音频下载件 —— 可随时重新拉取，体积大不进仓库
+bili2text/downloads/
+
+# Day 27 第三方试用本地副本（dist 的拷贝，可随时重建，不入库）
+evidence/day27-record/trial1/
+evidence/day27-record/trial2/
